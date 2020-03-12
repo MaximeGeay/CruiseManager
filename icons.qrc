@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icones/CadenasFerme.jpg</file>
+        <file>icones/CadenasOuvert.jpg</file>
+    </qresource>
+</RCC>
