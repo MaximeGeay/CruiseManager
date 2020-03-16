@@ -39,6 +39,7 @@ private slots:
 
 signals:
     void erreur(QString);
+    void copyPourcent(int);
 
 private:
     Ui::DataManager *ui;
@@ -50,6 +51,8 @@ private:
     bool mSimulate=true;
     bool mManualSync=false;
     int mFilesToSync=0;
+    int mCumulSize=0;
+    int mSizeToCopy=0;
 
 
 

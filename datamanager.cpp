@@ -25,7 +25,8 @@ DataManager::DataManager(QWidget *parent, Sensor *sensor) :
     if(QSysInfo::productType().compare("windows",Qt::CaseInsensitive)==0)
         mSystemIsWindows=true;
 
-    ui->progressBar->setVisible(false);
+    ui->pb_File->setVisible(false);
+    ui->pb_Total->setVisible(false);
 
 
 }
@@ -184,9 +185,12 @@ void DataManager::synchro()
     }
 
 
-    ui->progressBar->setRange(0,100);
-   ui->progressBar->setValue(0);
-    ui->progressBar->setVisible(true);
+    ui->pb_File->setRange(0,100);
+   ui->pb_File->setValue(0);
+    ui->pb_File->setVisible(true);
+
+   ui->pb_Total->setValue(0);
+    ui->pb_Total->setVisible(true);
 
 
     if(mSimulate)
@@ -228,7 +232,7 @@ void DataManager::synchro()
    qDebug()<<"sCmd"<<sCmd;
    ui->l_Etat->setText(sCmd);
 
-
+    mCumulSize=0;
    mProcessSynchro->start(sCmd);
 
 
@@ -242,16 +246,32 @@ void DataManager::rsyncReponse()
 
 
     ui->te_rsync->append(sReponse);
-    if(sReponse.contains("files to consider"))
+    if(mSimulate&&sReponse.contains("total size"))
     {
-        mFilesToSync=sReponse.section("files to consider",0,0).remove(' ').toInt();
-        qDebug()<<"total"<< mFilesToSync;
+        mSizeToCopy=sReponse.section("total size is",1,1).section("speedup",0,0).remove(" ").remove(",").toInt()/1000;
+
+        ui->pb_Total->setRange(0,mSizeToCopy);
+
+
     }
+
 
     if(sReponse.contains("%"))
     {
-        qDebug()<<"value"<<sReponse.section("% ",0,0).section(" ",-1).toInt();
-        ui->progressBar->setValue(sReponse.section("% ",0,0).section(" ",-1).toInt());
+        //qDebug()<<"value"<<sReponse.section("% ",0,0).section(" ",-1).toInt();
+        int nPourcent=sReponse.section("% ",0,0).section(" ",-1).toInt();
+        ui->pb_File->setValue(nPourcent);
+
+        int nSize=sReponse.section(",",0,1).section("\r",1,1).remove(" ").remove(",").toInt();
+        ui->pb_Total->setValue(mCumulSize+nSize);
+        emit copyPourcent(ui->pb_Total->text().remove("%").toInt());
+
+        if(nPourcent==100)
+            mCumulSize+=nSize;
+
+       // int nTemp=mCumulSize+nSize;
+
+
     }
 
 
@@ -265,7 +285,11 @@ void DataManager::rsyncEnd(int exitCode, QProcess::ExitStatus exitStatus)
     {
        if(mManualSync)
        {
-           nRes=QMessageBox::question(this,"Confirmation de la synchronisation","Souhaitez-vous procéder à la synchronisation?");
+           double dSize=mSizeToCopy;
+                   dSize=dSize/1000;
+           QString sMoToCopy=QString::number(dSize,'f',1);
+           nRes=QMessageBox::question(this,"Confirmation de la synchronisation",QString("%1 Mo à copier\n"
+                                                                                "Souhaitez-vous procéder à la synchronisation?").arg(sMoToCopy));
        }
        else
        {
@@ -275,7 +299,8 @@ void DataManager::rsyncEnd(int exitCode, QProcess::ExitStatus exitStatus)
         if(nRes==QMessageBox::Yes)
         {
              mSimulate=false;
-             ui->progressBar->setVisible(true);
+             ui->pb_File->setVisible(true);
+             ui->pb_Total->setVisible(true);
             synchro();
         }
 
@@ -284,7 +309,8 @@ void DataManager::rsyncEnd(int exitCode, QProcess::ExitStatus exitStatus)
     else
     {
         mSimulate=true;
-        ui->progressBar->setVisible(false);
+        ui->pb_File->setVisible(false);
+        ui->pb_Total->setVisible(false);
     }
 
     mManualSync=false;

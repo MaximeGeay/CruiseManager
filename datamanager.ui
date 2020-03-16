@@ -7,13 +7,48 @@
     <x>0</x>
     <y>0</y>
     <width>526</width>
-    <height>106</height>
+    <height>164</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <item row="4" column="0" colspan="4">
+    <widget class="QLabel" name="l_Etat">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2">
+    <widget class="QPushButton" name="btn_Synchro">
+     <property name="text">
+      <string>Synchroniser</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QPushButton" name="btn_AddFiles">
+     <property name="text">
+      <string>Ajouter des fichiers</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="4">
+    <widget class="QTextEdit" name="te_rsync">
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="4">
+    <widget class="QProgressBar" name="pb_File">
+     <property name="value">
+      <number>24</number>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="0">
     <widget class="QLabel" name="l_Nom">
      <property name="font">
@@ -26,20 +61,6 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="1">
-    <widget class="QPushButton" name="btn_AddFiles">
-     <property name="text">
-      <string>Ajouter des fichiers</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0" colspan="4">
-    <widget class="QLabel" name="l_Etat">
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-   </item>
    <item row="0" column="3">
     <widget class="QCheckBox" name="cb_SynchroAuto">
      <property name="text">
@@ -47,22 +68,8 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="0" colspan="4">
-    <widget class="QTextEdit" name="te_rsync">
-     <property name="readOnly">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="2">
-    <widget class="QPushButton" name="btn_Synchro">
-     <property name="text">
-      <string>Synchroniser</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0" colspan="4">
-    <widget class="QProgressBar" name="progressBar">
+   <item row="3" column="0" colspan="4">
+    <widget class="QProgressBar" name="pb_Total">
      <property name="value">
       <number>24</number>
      </property>
