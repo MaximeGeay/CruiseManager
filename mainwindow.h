@@ -29,7 +29,7 @@ private slots:
 
     void init();
     void ouvreRepCourant();
-    void on_treeView_doubleClicked(const QModelIndex &index);
+    void treeView_doubleClicked(const QModelIndex &index);
     void afficheConfig();
     void dataListRequested();
     void ouvrirMissions();
@@ -52,19 +52,7 @@ private:
     QList<DataManager*>mDataManagers;
      QHBoxLayout *mLayoutDataManager;
      DataManager *mLastDataManager;
-    /*
-    DataManager *mData2040;
-    DataManager *mDataKlein;
-    DataManager *mDataSparker;
-    DataManager *mDataPeskavel;
-    DataManager *mDataMaregraphe;
-    DataManager *mDataEK60;
-    DataManager *mDataME70;
-    DataManager *mDataRoxAnn;
-    DataManager *mDataHydrins;
-    DataManager *mDataOsea;
-    DataManager *mDataScout;
-    QVBoxLayout *mLayoutEquipement;*/
+
 
 };
 #endif // MAINWINDOW_H

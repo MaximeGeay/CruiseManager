@@ -1,5 +1,6 @@
 #include <QFileDialog>
 #include<QDebug>
+#include <QSettings>
 
 #include "sensor.h"
 #include "ui_sensor.h"
@@ -161,9 +162,15 @@ void Sensor::clickOnParcSource()
 
 void Sensor::clickOnParcDest()
 {
-    QString sChemin=QFileDialog::getExistingDirectory(this,QString("Sélectionner le répertoire destinations des données %1").arg(ui->le_Name->text()),mParameters.sDestPath,QFileDialog::ShowDirsOnly);
+    QSettings settings("CruiseManager","Settings");
+
+    QString sMissionPath=QString("%1/%2").arg(settings.value("Mission/Path").toString()).arg(settings.value("Mission/Nom").toString());
+    QString sChemin=QFileDialog::getExistingDirectory(this,QString("Sélectionner le répertoire destinations des données %1").arg(ui->le_Name->text()),sMissionPath,QFileDialog::ShowDirsOnly);
     if(!sChemin.isEmpty())
-        ui->le_Dest->setText(sChemin);
+    {
+        ui->le_Dest->setText(sChemin.section(sMissionPath,-1));
+
+    }
 }
 
 void Sensor::typeChanged(int nType)

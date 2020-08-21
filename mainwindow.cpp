@@ -15,7 +15,7 @@
 #include"fenpreferences.h"
 #include "datamanager.h"
 
-#define VERSION "CruiseManager 1.0"
+#define VERSION "CruiseManager 1.1"
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -37,36 +37,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->gb_Details->setLayout(mLayoutDataManager);
     mLastDataManager=new DataManager(nullptr,new Sensor);
 
-/*
-    mLayoutEquipement=new QVBoxLayout(ui->gb_Equipement);
-
-    mData2040=new DataManager(ui->gb_Equipement,"EM2040",DataManager::Type::DataEtAnnexe);
-    mDataKlein=new DataManager(ui->gb_Equipement,"Klein3000",DataManager::Type::DataEtAnnexe);
-    mDataSparker=new DataManager(ui->gb_Equipement,"Sparker",DataManager::Type::DataSansAnnexe);
-    mDataPeskavel=new DataManager(ui->gb_Equipement,"Peskavel",DataManager::Type::DataSansAnnexe);
-    mDataMaregraphe=new DataManager(ui->gb_Equipement,"Maregraphe",DataManager::Type::DataSansAnnexe);
-    mDataEK60=new DataManager(ui->gb_Equipement,"EK60",DataManager::Type::DataEtAnnexe);
-    mDataME70=new DataManager(ui->gb_Equipement,"ME70",DataManager::Type::DataEtAnnexe);
-    mDataRoxAnn = new DataManager(ui->gb_Equipement,"RoxAnn",DataManager::Type::FichiersSimples);
-    mDataScout= new DataManager(ui->gb_Equipement,"Scout",DataManager::Type::FichiersSimples);
-    mDataHydrins= new DataManager(ui->gb_Equipement,"Hydrins",DataManager::Type::FichiersSimples);
-    mDataOsea= new DataManager(ui->gb_Equipement,"mDataOsea",DataManager::Type::FichiersSimples);
-
-
-    mLayoutEquipement->addWidget(mData2040);
-    mLayoutEquipement->addWidget(mDataKlein);
-    mLayoutEquipement->addWidget(mDataSparker);
-    mLayoutEquipement->addWidget(mDataPeskavel);
-    mLayoutEquipement->addWidget(mDataMaregraphe);
-    mLayoutEquipement->addWidget(mDataEK60);
-    mLayoutEquipement->addWidget(mDataME70);
-    mLayoutEquipement->addWidget(mDataRoxAnn);
-    mLayoutEquipement->addWidget(mDataScout);
-    mLayoutEquipement->addWidget(mDataHydrins);
-    mLayoutEquipement->addWidget(mDataOsea);
-    mLayoutEquipement->setAlignment(Qt::AlignTop);
-*/
-
 
     init();
 
@@ -75,7 +45,7 @@ MainWindow::MainWindow(QWidget *parent)
     QObject::connect(ui->btn_OpenRep,&QPushButton::clicked,this,&MainWindow::ouvreRepCourant);
     QObject::connect(ui->actionOuvrirMissions,&QAction::triggered,this,&MainWindow::ouvrirMissions);
     QObject::connect(ui->actionOuvrirConfMission,&QAction::triggered,this,&MainWindow::ouvrirConfMission);
-    QObject::connect(ui->treeView,&QTreeView::doubleClicked,this,&MainWindow::on_treeView_doubleClicked);
+    QObject::connect(ui->treeView,&QTreeView::doubleClicked,this,&MainWindow::treeView_doubleClicked);
     QObject::connect(ui->actionPreferences,&QAction::triggered,fenPref,&fenPreferences::init);
     QObject::connect(ui->actionQuitter,&QAction::triggered,this,&MainWindow::close);
     QObject::connect(fenPref,&fenPreferences::editingFinished,this,&MainWindow::init);
@@ -99,7 +69,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::init()
 {
-    mPathToMissions=mSettings->value("PathToMissions","").toString();
+    mPathToMissions=mSettings->value("Mission/Path","").toString();
     mPathToConfMission=mSettings->value("PathToConfMission","").toString();
     mCurrentCruise=fenCruise->getCurrentCruise();
 
@@ -141,37 +111,6 @@ void MainWindow::init()
     if(!mCurrentCruise.sNom.isEmpty())
         ui->treeView->setRootIndex(treeModel->setRootPath(QString("%1/%2").arg(mPathToMissions).arg(mCurrentCruise.sNom)));
 
-/*
-   mData2040->setVisible(mCurrentCruise.listEquipements.contains("EM2040"));
-   mDataEK60->setVisible(mCurrentCruise.listEquipements.contains("EK60"));
-   mDataME70->setVisible(mCurrentCruise.listEquipements.contains("ME70"));
-   mDataKlein->setVisible(mCurrentCruise.listEquipements.contains("Klein3000"));
-   mDataRoxAnn->setVisible(mCurrentCruise.listEquipements.contains("RoxAnn"));
-   mDataSparker->setVisible(mCurrentCruise.listEquipements.contains("Sparker"));
-   mDataPeskavel->setVisible(mCurrentCruise.listEquipements.contains("Peskavel"));
-   mDataMaregraphe->setVisible(mCurrentCruise.listEquipements.contains("Maregraphe"));
-   mDataScout->setVisible(mCurrentCruise.listEquipements.contains("Scout"));
-   mDataHydrins->setVisible(mCurrentCruise.listEquipements.contains("Hydrins"));
-   mDataOsea->setVisible(mCurrentCruise.listEquipements.contains("Osea"));*/
-
-    /*
-   if(mCurrentCruise.listEquipements.contains("EM2040"))
-   {
-       mData2040->setSynchroPath(QString("%1/%2").arg(mCurrentCruise.sPath).arg(QString("EQUIPEMENTS/EM2040/DONNEES")));
-       mData2040->setAnnexePath(QString("%1/%2").arg(mCurrentCruise.sPath).arg(QString("EQUIPEMENTS/EM2040/ANNEXES")));
-       QStringList filter;
-       filter<<"*.all"<<"*.wcd";
-       mData2040->setFilter(filter);
-   }
-   if(mCurrentCruise.listEquipements.contains("EK60"))
-   {
-       mDataEK60->setSynchroPath(QString("%1/%2").arg(mCurrentCruise.sPath).arg(QString("EQUIPEMENTS/EK60/DONNEES")));
-       mDataEK60->setAnnexePath(QString("%1/%2").arg(mCurrentCruise.sPath).arg(QString("EQUIPEMENTS/EK60/ANNEXES")));
-
-   }
-
-
-*/
 
 }
 
@@ -180,7 +119,7 @@ void MainWindow::ouvreRepCourant()
     QDesktopServices::openUrl(QUrl(QString("%1/%2").arg(mPathToMissions).arg(mCurrentCruise.sNom)));
 }
 
-void MainWindow::on_treeView_doubleClicked(const QModelIndex &index)
+void MainWindow::treeView_doubleClicked(const QModelIndex &index)
 {
     QString sContent=treeModel->filePath(index);
     if(sContent.section("/",-1).contains("."))

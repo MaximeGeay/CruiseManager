@@ -3,6 +3,10 @@
 #include <QFile>
 #include <QMessageBox>
 #include <QSysInfo>
+#include <QFileSystemModel>
+#include <QDesktopServices>
+#include <QSettings>
+
 #include "datamanager.h"
 #include "ui_datamanager.h"
 
@@ -15,6 +19,10 @@ DataManager::DataManager(QWidget *parent, Sensor *sensor) :
     QObject::connect(ui->btn_AddFiles,&QPushButton::clicked,this,&DataManager::clickOnAddFiles);
     QObject::connect(ui->btn_Synchro,&QPushButton::clicked,this,&DataManager::clickOnSynchro);
 
+    treeModel=new QFileSystemModel;
+    ui->treeContenu->setModel(treeModel);
+    ui->treeContenu->header()->setSectionResizeMode(0,QHeaderView::Stretch);
+
     setSensor(sensor);
 
     mProcessSynchro=new QProcess(this);
@@ -22,11 +30,15 @@ DataManager::DataManager(QWidget *parent, Sensor *sensor) :
    // QObject::connect(mProcessSynchro,&QProcess::readyRead,this,&DataManager::rsyncReponse);
     QObject::connect(mProcessSynchro,QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),this,&DataManager::rsyncEnd);
 
+    QObject::connect(ui->treeContenu,&QTreeView::doubleClicked,this,&DataManager::treeView_doubleClicked);
+
     if(QSysInfo::productType().compare("windows",Qt::CaseInsensitive)==0)
         mSystemIsWindows=true;
 
     ui->pb_File->setVisible(false);
     ui->pb_Total->setVisible(false);
+
+
 
 
 }
@@ -43,6 +55,8 @@ void DataManager::setSensor(Sensor *sensor)
     ui->l_Nom->setText(param.sName);
     ui->l_Etat->setText(param.sDesc);
 
+    if(!param.sDestPath.isEmpty())
+         ui->treeContenu->setRootIndex(treeModel->setRootPath(getCompletePath(mSensor)));
 }
 
 bool DataManager::getSynchroStatus()
@@ -68,7 +82,7 @@ void DataManager::clickOnAddFiles()
     if(!sSources.isEmpty())
     {
         QDir dir;
-        if(dir.exists(param.sDestPath))
+        if(dir.exists(getCompletePath(mSensor)))
         {
             QString sUneSource;
             QString sNomFichier;
@@ -78,9 +92,9 @@ void DataManager::clickOnAddFiles()
                 sNomFichier=sUneSource.section("/",-1);
 
                 QFile file;
-                if(!file.copy(sUneSource,QString("%1/%2").arg(param.sDestPath).arg(sNomFichier)))
+                if(!file.copy(sUneSource,QString("%1/%2").arg(getCompletePath(mSensor)).arg(sNomFichier)))
                 {
-                    QString sMsg=QString("Impossible de copier le fichier %1 de %2 dans %3").arg(sNomFichier).arg(sUneSource).arg(param.sDestPath);
+                    QString sMsg=QString("Impossible de copier le fichier %1 de %2 dans %3").arg(sNomFichier).arg(sUneSource).arg(getCompletePath(mSensor));
                     sErrors.append(sMsg);
                 }
 
@@ -89,7 +103,7 @@ void DataManager::clickOnAddFiles()
         }
         else
         {
-            QString sMsg=QString("Le répertoire Destination %1 n'existe pas").arg(param.sDestPath);
+            QString sMsg=QString("Le répertoire Destination %1 n'existe pas").arg(getCompletePath(mSensor));
             sErrors.append(sMsg);
         }
     }
@@ -130,7 +144,7 @@ void DataManager::clickOnSynchro()
         nRes=QMessageBox::question(this,QString("Synchronisation de fichier"),QString("Etes-vous sûr de vouloir synchroniser les données %1\n"
                                                                                           "Source : %2\n"
                                                                                           "Destination : %3\n"
-                                                                                          "Type : Dossier").arg(param.sName).arg(param.sSourcePath).arg(param.sDestPath));
+                                                                                          "Type : Dossier").arg(param.sName).arg(param.sSourcePath).arg(getCompletePath(mSensor)));
 
     }
 
@@ -150,7 +164,7 @@ void DataManager::synchro()
 {
     ui->te_rsync->clear();
 
-
+    mFilesList.clear();
     Sensor::Parameters param=mSensor->getParameters();
     QDir dir;
     if(!dir.exists(param.sSourcePath))
@@ -160,9 +174,9 @@ void DataManager::synchro()
         emit erreur(sMsg);
         return;
     }
-    if(!dir.exists(param.sDestPath))
+    if(!dir.exists(getCompletePath(mSensor)))
     {
-        QString sMsg=QString("Le répertoire Destination %1 n'existe pas").arg(param.sDestPath);
+        QString sMsg=QString("Le répertoire Destination %1 n'existe pas").arg(getCompletePath(mSensor));
         qDebug()<<sMsg;
         emit erreur(sMsg);
         return;
@@ -172,15 +186,16 @@ void DataManager::synchro()
     QString sCmd;
     QString sSource,sDest,sProgram;
     QString sOption;
+    mSourcePath=param.sSourcePath;
     if(mSystemIsWindows)
     {
         sSource=QString("/cygdrive/%1%2").arg(param.sSourcePath.section(":",0,0)).arg(param.sSourcePath.section(":",1,-1));
-        sDest=QString("/cygdrive/%1%2").arg(param.sDestPath.section(":",0,0)).arg(param.sDestPath.section(":",1,-1));
+        sDest=QString("/cygdrive/%1%2").arg(getCompletePath(mSensor).section(":",0,0)).arg(getCompletePath(mSensor).section(":",1,-1));
         sProgram=QString("E:/Developpement/CruiseManager/rsync/rsync.exe");
     }
     else {
         sSource=param.sSourcePath;
-        sDest=param.sDestPath;
+        sDest=getCompletePath(mSensor);
         sProgram=QString("rsync");
     }
 
@@ -194,10 +209,10 @@ void DataManager::synchro()
 
 
     if(mSimulate)
-        sOption=QString("-navz");
+        sOption=QString("-nrlptoDvz");
     else
     {
-        sOption=QString("-avz");
+        sOption=QString("-rlptoDvz");
 
 
 
@@ -211,11 +226,10 @@ void DataManager::synchro()
        QString sInclude;
        for(int n=0;n<=nbExt;n++)
        {
-           sInclude=sInclude.append(QString("--include=\"%1\" ").arg(param.sExtensions.section(",",n,n)));
+           sInclude=sInclude.append(QString(" --include=\"%1\"").arg(param.sExtensions.section(",",n,n)));
 
        }
 
-       qDebug()<<"sInclude"<<sInclude;
 
        sCmd=QString("%1 %2 %3 --exclude=\"*\" --progress --delete-after %4/ %5/").arg(sProgram).arg(sOption).arg(sInclude).arg(sSource).arg(sDest);
    }
@@ -229,15 +243,14 @@ void DataManager::synchro()
    if(mSystemIsWindows)
         mProcessSynchro->setWorkingDirectory("E:/Developpement/CruiseManager/rsync");
 
-   qDebug()<<"sCmd"<<sCmd;
-   ui->l_Etat->setText(sCmd);
+   //ui->l_Etat->setText(sCmd);
 
     mCumulSize=0;
    mProcessSynchro->start(sCmd);
 
 
    //ui->l_Etat->setText(sCmd);
-
+    ui->te_rsync->append(">> "+sCmd);
 }
 
 void DataManager::rsyncReponse()
@@ -248,9 +261,40 @@ void DataManager::rsyncReponse()
     ui->te_rsync->append(sReponse);
     if(mSimulate&&sReponse.contains("total size"))
     {
-        mSizeToCopy=sReponse.section("total size is",1,1).section("speedup",0,0).remove(" ").remove(",").toInt()/1000;
+        mSizeToCopy=0;
+        int nbRC=sReponse.count("\n");
+        qDebug()<<"sReponse"<<sReponse;
+        qDebug()<<"n"<<sReponse.count("\n");
 
+        if(nbRC>3)
+        {
+
+            for(int i=1;i<nbRC-3;i++)
+            {
+                qDebug()<<sReponse.section("\n",i,i);
+                mFilesList.append(sReponse.section("\n",i,i));
+            }
+
+            QStringListIterator it(mFilesList);
+            while(it.hasNext())
+            {
+                QString sFile=it.next();
+                QFile file(QString("%1/%2").arg(mSourcePath).arg(sFile));
+                qDebug()<<QString("%1/%2").arg(mSourcePath).arg(sFile);
+                qDebug()<<"file.size()"<<file.size();
+                mSizeToCopy=mSizeToCopy+file.size();
+
+            }
+
+       // mSizeToCopy=sReponse.section("total size is",1,1).section("speedup",0,0).remove(" ").remove(",").toInt()/1000;
+        mSizeToCopy=mSizeToCopy/1000;
         ui->pb_Total->setRange(0,mSizeToCopy);
+        mSyncOK=false;
+        }
+        else
+        {
+            mSyncOK=true;
+        }
 
 
     }
@@ -285,6 +329,14 @@ void DataManager::rsyncEnd(int exitCode, QProcess::ExitStatus exitStatus)
     {
        if(mManualSync)
        {
+           if(mSyncOK)
+           {
+               QMessageBox::information(this,"Fichiers synchronisés","Fichiers synchronisés");
+               mManualSync=false;
+               ui->pb_File->setVisible(false);
+               ui->pb_Total->setVisible(false);
+               return;
+           }
            double dSize=mSizeToCopy;
                    dSize=dSize/1000;
            QString sMoToCopy=QString::number(dSize,'f',1);
@@ -311,8 +363,33 @@ void DataManager::rsyncEnd(int exitCode, QProcess::ExitStatus exitStatus)
         mSimulate=true;
         ui->pb_File->setVisible(false);
         ui->pb_Total->setVisible(false);
+
     }
 
     mManualSync=false;
-  //
+    //
+}
+
+void DataManager::treeView_doubleClicked(const QModelIndex &index)
+{
+    QString sContent=treeModel->filePath(index);
+    if(sContent.section("/",-1).contains("."))
+    {
+        if(!m_DClic)
+        {   m_DClic=true;
+
+            QDesktopServices::openUrl(QUrl(sContent));
+        }
+        else
+            m_DClic=false;
+    }
+}
+
+QString DataManager::getCompletePath(Sensor *sensor)
+{
+    Sensor::Parameters param(sensor->getParameters());
+    QSettings settings("CruiseManager","Settings");
+    QString sMissionPath=QString("%1/%2").arg(settings.value("Mission/Path").toString()).arg(settings.value("Mission/Nom").toString());
+    QString sCompletePath=sMissionPath+param.sDestPath;
+    return sCompletePath;
 }

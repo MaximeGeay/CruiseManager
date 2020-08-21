@@ -46,7 +46,7 @@ fenPreferences::fenPreferences(QWidget *parent) :
     mSensorLayout->setDirection(QBoxLayout::TopToBottom);
 
 
-    mPathToMissions=mSettings->value("PathToMissions",QDir::homePath()).toString();
+    mPathToMissions=mSettings->value("Mission/Path",QDir::homePath()).toString();
     mPathToConfMission=mSettings->value("PathToConfMission",QDir::homePath()).toString();
 
     majListItem();
@@ -62,7 +62,7 @@ fenPreferences::~fenPreferences()
 
 void fenPreferences::init()
 {
-    mPathToMissions=mSettings->value("PathToMissions",QDir::homePath()).toString();
+    mPathToMissions=mSettings->value("Mission/Path",QDir::homePath()).toString();
     mPathToConfMission=mSettings->value("PathToConfMission",QDir::homePath()).toString();
 
     ui->le_RepCruises->setText(mPathToMissions);
@@ -132,7 +132,7 @@ void fenPreferences::valider()
     QDir dir;
     if(dir.exists(ui->le_RepCruises->text()))
     {
-        mSettings->setValue("PathToMissions",ui->le_RepCruises->text());
+        mSettings->setValue("Mission/Path",ui->le_RepCruises->text());
     }
     else
     {
@@ -195,7 +195,7 @@ void fenPreferences::addSensor(Sensor *sensor)
 
 void fenPreferences::majCurrentCruise()
 {
-    QString sPathToNewCruise=QString("%1/%2").arg(mPathToMissions).arg(mCurrentCruise);
+  /*  QString sPathToNewCruise=QString("%1/%2").arg(mPathToMissions).arg(mCurrentCruise);
     QString sRelativePath;
 
     QList<Sensor*>tempList;
@@ -210,7 +210,7 @@ void fenPreferences::majCurrentCruise()
     }
 
     mSensorList=tempList;
-    saveSensorList();
+    saveSensorList();*/
 }
 
 void fenPreferences::removeSensor()

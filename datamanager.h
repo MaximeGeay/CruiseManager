@@ -12,6 +12,7 @@ class DataManager;
 }
 
 
+class QFileSystemModel;
 
 class DataManager : public QWidget
 {
@@ -36,6 +37,7 @@ private slots:
     void synchro();
     void rsyncReponse();
     void rsyncEnd(int exitCode, QProcess::ExitStatus exitStatus);
+    void treeView_doubleClicked(const QModelIndex &index);
 
 signals:
     void erreur(QString);
@@ -51,8 +53,16 @@ private:
     bool mSimulate=true;
     bool mManualSync=false;
     int mFilesToSync=0;
+    QStringList mFilesList;
     int mCumulSize=0;
     int mSizeToCopy=0;
+    bool mSyncOK=false;
+    bool m_DClic=false;
+    QString mSourcePath;
+
+    QFileSystemModel *treeModel;
+    QString getCompletePath(Sensor *sensor);
+
 
 
 
