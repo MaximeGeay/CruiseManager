@@ -22,7 +22,7 @@ Sensor::Sensor(QWidget *parent) :
 
 
 
-    init();
+    //init();
 }
 
 
@@ -41,6 +41,7 @@ void Sensor::write(QXmlStreamWriter &writer)
         writer.writeAttribute("SourcePath",QString("%1").arg(mParameters.sSourcePath));
         writer.writeAttribute("DestPath",QString("%1").arg(mParameters.sDestPath));
         writer.writeAttribute("Type",QString("%1").arg(mParameters.type));
+        writer.writeAttribute("Sync",QString("%1").arg(mParameters.sync));
         writer.writeAttribute("Ext",QString("%1").arg(mParameters.sExtensions));
        // writer.writeAttribute("Valid",QString("%1").arg(mParameters.bValid));
         writer.writeAttribute("Group",QString("%1").arg(mParameters.sGroup));
@@ -100,12 +101,15 @@ void Sensor::init()
     ui->le_Source->setText(mParameters.sSourcePath);
     ui->le_ext->setText(mParameters.sExtensions);
     ui->te_Desc->setText(mParameters.sDesc);
+
    // ui->cb_Activer->setChecked(mParameters.bValid);
     ui->cb_Type->setCurrentIndex(mParameters.type);
     selGroup();
-
+   //qDebug()<<"param"<<mParameters.sName<<mParameters.sync;
     typeChanged(ui->cb_Type->currentIndex());
-  //  this->show();
+    syncChanged(mParameters.sync);
+
+    //  this->show();
 
 }
 
@@ -114,6 +118,8 @@ void Sensor::verrouiller()
     bool bVerrou=!ui->Btn_Modifier->isChecked();
     //ui->Btn_Modifier->setVisible(!bVerrou);
     ui->le_Name->setReadOnly(bVerrou);
+    ui->rd_Increment->setEnabled(!bVerrou);
+    ui->rd_Mirror->setEnabled(!bVerrou);
     ui->le_Source->setReadOnly(bVerrou);
     ui->btn_ParcSource->setEnabled(!bVerrou);
     ui->btn_ParcDest->setEnabled(!bVerrou);
@@ -141,6 +147,11 @@ void Sensor::clicOnValider()
     mParameters.sDesc=ui->te_Desc->toPlainText();
     mParameters.type=static_cast<Sensor::RecordType>(ui->cb_Type->currentIndex());
     mParameters.sGroup=ui->cb_Groupes->currentText();
+    if(ui->rd_Mirror->isChecked())
+        mParameters.sync=SyncType::Mirror;
+    else
+        mParameters.sync=SyncType::Incremental;
+    //qDebug()<<"sync"<<mParameters.sync;
 
     emit editingFinished();
 
@@ -184,13 +195,29 @@ void Sensor::typeChanged(int nType)
     }
     else
     {
-        if(nType==RecordType::Folder)
+        if(nType==RecordType::Folder || nType==RecordType::Cruise)
         {
             // qDebug()<<"Folder"<<nType;
             ui->le_ext->setVisible(false);
             ui->l_Ext->setVisible(false);
         }
     }
+}
+
+void Sensor::syncChanged(int nSync)
+{
+
+    if(nSync==SyncType::Incremental)
+    {
+        ui->rd_Increment->setChecked(true);
+        ui->rd_Mirror->setChecked(false);
+    }
+    if(nSync==SyncType::Mirror)
+    {
+        ui->rd_Increment->setChecked(false);
+        ui->rd_Mirror->setChecked(true);
+    }
+
 }
 /*
 void Sensor::activation(int nValid)

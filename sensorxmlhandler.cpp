@@ -22,6 +22,7 @@ bool SensorXmlHandler::startElement(const QString &namespaceURI, const QString &
         param.sDestPath=atts.value("DestPath");
         param.sExtensions=atts.value("Ext");
         param.sDesc=atts.value("Desc");
+        param.sync=static_cast<Sensor::SyncType>(atts.value("Sync").toInt());
       /*
         QString sValid=atts.value("Valid");
         if(sValid=="1")
@@ -31,7 +32,6 @@ bool SensorXmlHandler::startElement(const QString &namespaceURI, const QString &
         */
         param.type=static_cast<Sensor::RecordType>(atts.value("Type").toInt());
         param.sGroup=atts.value("Group");
-      //  qDebug()<<param.sName<<param.sSourcePath<<param.sDestPath<<param.sExtensions<<param.bValid<<param.type;
         Sensor* sensor= new Sensor;
         sensor->setParameters(param);
 

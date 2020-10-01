@@ -26,8 +26,7 @@ DataManager::DataManager(QWidget *parent, Sensor *sensor) :
     setSensor(sensor);
 
     mProcessSynchro=new QProcess(this);
-    QObject::connect(mProcessSynchro,&QProcess::readyReadStandardOutput,this,&DataManager::rsyncReponse);
-   // QObject::connect(mProcessSynchro,&QProcess::readyRead,this,&DataManager::rsyncReponse);
+    //QObject::connect(mProcessSynchro,&QProcess::readyReadStandardOutput,this,&DataManager::rsyncReponse);
     QObject::connect(mProcessSynchro,QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),this,&DataManager::rsyncEnd);
 
     QObject::connect(ui->treeContenu,&QTreeView::doubleClicked,this,&DataManager::treeView_doubleClicked);
@@ -207,7 +206,7 @@ void DataManager::synchro()
    ui->pb_Total->setValue(0);
     ui->pb_Total->setVisible(true);
 
-
+    qDebug()<<"mSimulate"<<mSimulate;
     if(mSimulate)
         sOption=QString("-nrlptoDvz");
     else
@@ -218,6 +217,10 @@ void DataManager::synchro()
 
     }
 
+
+    QString sSync="";
+    if(param.sync==Sensor::SyncType::Mirror)
+        sSync="--delete-after ";
 
    if(param.type==Sensor::RecordType::Files)
    {
@@ -231,11 +234,11 @@ void DataManager::synchro()
        }
 
 
-       sCmd=QString("%1 %2 %3 --exclude=\"*\" --progress --delete-after %4/ %5/").arg(sProgram).arg(sOption).arg(sInclude).arg(sSource).arg(sDest);
+       sCmd=QString("%1 %2 %3 --exclude=\"*\" --progress %4%5/ %6/").arg(sProgram).arg(sOption).arg(sInclude).arg(sSync).arg(sSource).arg(sDest);
    }
    else
    {
-       sCmd=QString("%1 %2 --progress --delete-after %3/ %4/").arg(sProgram).arg(sOption).arg(sSource).arg(sDest);
+       sCmd=QString("%1 %2 --progress %3%4/ %5/").arg(sProgram).arg(sOption).arg(sSync).arg(sSource).arg(sDest);
 
 
    }
@@ -256,22 +259,23 @@ void DataManager::synchro()
 void DataManager::rsyncReponse()
 {
     QString sReponse=mProcessSynchro->readAllStandardOutput();
-
+   // qDebug()<<"sReponse"<<sReponse;
 
     ui->te_rsync->append(sReponse);
+    /*
     if(mSimulate&&sReponse.contains("total size"))
     {
         mSizeToCopy=0;
         int nbRC=sReponse.count("\n");
-        qDebug()<<"sReponse"<<sReponse;
-        qDebug()<<"n"<<sReponse.count("\n");
+       //qDebug()<<"sReponse"<<sReponse;
+      // qDebug()<<"n"<<sReponse.count("\n");
 
         if(nbRC>3)
         {
 
             for(int i=1;i<nbRC-3;i++)
             {
-                qDebug()<<sReponse.section("\n",i,i);
+                //qDebug()<<sReponse.section("\n",i,i);
                 mFilesList.append(sReponse.section("\n",i,i));
             }
 
@@ -298,7 +302,7 @@ void DataManager::rsyncReponse()
 
 
     }
-
+*/
 
     if(sReponse.contains("%"))
     {
@@ -323,6 +327,78 @@ void DataManager::rsyncReponse()
 
 void DataManager::rsyncEnd(int exitCode, QProcess::ExitStatus exitStatus)
 {
+    QString sReponse=mProcessSynchro->readAllStandardOutput();
+    QStringList listRep;
+    int nRC=sReponse.count("\n");
+    for(int n=0;n<nRC;n++)
+    {
+        listRep.append(sReponse.section("\n",n,n));
+    }
+
+    QStringList delList=listRep.filter("deleting ");
+
+    ui->te_rsync->append(sReponse);
+    //qDebug()<<"listRep"<<listRep;
+    if(mSimulate&&sReponse.contains("total size"))
+    {
+        mSizeToCopy=0;
+        int nbRC=sReponse.count("\n");
+       //qDebug()<<"sReponse"<<sReponse;
+      // qDebug()<<"n"<<sReponse.count("\n");
+
+        if(nbRC>3)
+        {
+
+            for(int i=1;i<nbRC-3;i++)
+            {
+                //qDebug()<<sReponse.section("\n",i,i);
+                mFilesList.append(sReponse.section("\n",i,i));
+            }
+
+            QStringListIterator it(mFilesList);
+            while(it.hasNext())
+            {
+                QString sFile=it.next();
+                QFile file(QString("%1/%2").arg(mSourcePath).arg(sFile));
+              //  qDebug()<<QString("%1/%2").arg(mSourcePath).arg(sFile);
+               // qDebug()<<"file.size()"<<file.size();
+                mSizeToCopy=mSizeToCopy+file.size();
+
+            }
+
+       // mSizeToCopy=sReponse.section("total size is",1,1).section("speedup",0,0).remove(" ").remove(",").toInt()/1000;
+        mSizeToCopy=mSizeToCopy/1000;
+        ui->pb_Total->setRange(0,mSizeToCopy);
+        mSyncOK=false;
+        }
+        else
+        {
+            mSyncOK=true;
+        }
+
+
+    }
+/*
+
+    if(sReponse.contains("%"))
+    {
+        //qDebug()<<"value"<<sReponse.section("% ",0,0).section(" ",-1).toInt();
+        int nPourcent=sReponse.section("% ",0,0).section(" ",-1).toInt();
+        ui->pb_File->setValue(nPourcent);
+
+        int nSize=sReponse.section(",",0,1).section("\r",1,1).remove(" ").remove(",").toInt();
+        ui->pb_Total->setValue(mCumulSize+nSize);
+        emit copyPourcent(ui->pb_Total->text().remove("%").toInt());
+
+        if(nPourcent==100)
+            mCumulSize+=nSize;
+
+       // int nTemp=mCumulSize+nSize;
+
+
+    }*/
+
+
     qDebug()<<"exitCode"<<exitCode<<exitStatus;
     int nRes;
     if(exitCode==0&&mSimulate)
@@ -331,16 +407,33 @@ void DataManager::rsyncEnd(int exitCode, QProcess::ExitStatus exitStatus)
        {
            if(mSyncOK)
            {
-               QMessageBox::information(this,"Fichiers synchronisés","Fichiers synchronisés");
+               QMessageBox::information(this,"Fichiers synchronisés","Fichiers déjà synchronisés");
                mManualSync=false;
                ui->pb_File->setVisible(false);
                ui->pb_Total->setVisible(false);
                return;
            }
            double dSize=mSizeToCopy;
+
                    dSize=dSize/1000;
-           QString sMoToCopy=QString::number(dSize,'f',1);
-           nRes=QMessageBox::question(this,"Confirmation de la synchronisation",QString("%1 Mo à copier\n"
+           QString sMoToCopy=QString::number(dSize,'f',3);
+
+           if(delList.size()>0)
+           {
+               QString sFichiers;
+               QStringListIterator it(delList);
+               while(it.hasNext())
+                   sFichiers=it.next()+" "+sFichiers;
+               sFichiers.remove("deleting ");
+               if(delList.size()==1)
+                   nRes=QMessageBox::question(this,"Confirmation de la synchronisation",QString("%1 Mo à copier\n%2 fichier sera supprimé : %3\n"
+                                                                                        "Souhaitez-vous procéder à la synchronisation?").arg(sMoToCopy).arg(delList.size()).arg(sFichiers));
+               else
+                    nRes=QMessageBox::question(this,"Confirmation de la synchronisation",QString("%1 Mo à copier\n%2 fichiers seront supprimés : %3\n"
+                                                                                    "Souhaitez-vous procéder à la synchronisation?").arg(sMoToCopy).arg(delList.size()).arg(sFichiers));
+           }
+           else
+                nRes=QMessageBox::question(this,"Confirmation de la synchronisation",QString("%1 Mo à copier\n"
                                                                                 "Souhaitez-vous procéder à la synchronisation?").arg(sMoToCopy));
        }
        else
@@ -353,7 +446,13 @@ void DataManager::rsyncEnd(int exitCode, QProcess::ExitStatus exitStatus)
              mSimulate=false;
              ui->pb_File->setVisible(true);
              ui->pb_Total->setVisible(true);
+             QObject::connect(mProcessSynchro,&QProcess::readyReadStandardOutput,this,&DataManager::rsyncReponse);
             synchro();
+        }
+        else
+        {
+            ui->pb_File->setVisible(false);
+            ui->pb_Total->setVisible(false);
         }
 
 
@@ -388,8 +487,16 @@ void DataManager::treeView_doubleClicked(const QModelIndex &index)
 QString DataManager::getCompletePath(Sensor *sensor)
 {
     Sensor::Parameters param(sensor->getParameters());
+    QString sCompletePath;
+    if(param.type==Sensor::Cruise)
+    {
+        sCompletePath=param.sDestPath;
+    }
+    else
+    {
     QSettings settings("CruiseManager","Settings");
     QString sMissionPath=QString("%1/%2").arg(settings.value("Mission/Path").toString()).arg(settings.value("Mission/Nom").toString());
-    QString sCompletePath=sMissionPath+param.sDestPath;
+    sCompletePath=sMissionPath+param.sDestPath;
+    }
     return sCompletePath;
 }

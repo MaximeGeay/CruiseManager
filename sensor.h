@@ -16,14 +16,19 @@ public:
 
     enum RecordType{
             Files=0,
-            Folder=1
+            Folder=1,
+            Cruise=2
         };
+    enum SyncType{
+            Incremental=0,
+            Mirror=1
+    };
 
         struct Parameters{
           QString sSourcePath,sDestPath,sName,sExtensions="*.*",sGroup="Tous",sDesc;
 
-          //bool bValid;
           RecordType type;
+          SyncType sync;
         };
 
 
@@ -50,6 +55,7 @@ private slots:
     void clickOnParcSource();
     void clickOnParcDest();
     void typeChanged(int nType);
+    void syncChanged(int nSync);
    // void activation(int nValid);
     void selGroup();
 

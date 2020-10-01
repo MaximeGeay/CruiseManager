@@ -42,12 +42,8 @@
         <string>Répertoire Mission</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout">
-        <item row="1" column="0">
-         <widget class="QPushButton" name="btn_OpenRep">
-          <property name="text">
-           <string>Ouvrir le répertoire de la mission courante</string>
-          </property>
-         </widget>
+        <item row="0" column="0" colspan="2">
+         <widget class="QTreeView" name="treeView"/>
         </item>
         <item row="1" column="1">
          <spacer name="horizontalSpacer">
@@ -62,14 +58,18 @@
           </property>
          </spacer>
         </item>
-        <item row="0" column="0" colspan="2">
-         <widget class="QTreeView" name="treeView"/>
+        <item row="1" column="0">
+         <widget class="QPushButton" name="btn_OpenRep">
+          <property name="text">
+           <string>Ouvrir le répertoire de la mission courante</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
       <widget class="QWidget" name="tab_2">
        <attribute name="title">
-        <string>Sources de données</string>
+        <string>Synchronisations des données</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_3">
         <item row="0" column="0">

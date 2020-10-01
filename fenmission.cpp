@@ -208,26 +208,36 @@ void fenMission::valider()
         }else
             QMessageBox::warning(this,QString("Erreur lors de la création de campagne"),QString("Le fichier CR_MISSION_DEC.doc n'a pas été trouvé"));
 
-        fFile=new QFile(QString("%1/Sippican_exemple.xls").arg(sPathToConfMission));
+        fFile=new QFile(QString("%1/Profils_exemple.ods").arg(sPathToConfMission));
+        if(fFile->exists())
+        {
+            dirRoot.mkpath(QString("%1/%2/DIVERS/RAPPORT").arg(sPathToMissions).arg(currentCruise.sNom));
+            if(!fFile->copy(QString("%1/%2/DIVERS/RAPPORT/%3").arg(sPathToMissions).arg(currentCruise.sNom).arg(QString("Profils_%1.ods").arg(currentCruise.sNom))))
+                QMessageBox::warning(this,QString("Erreur lors de la création de campagne"),QString("Le fichier Profils_%1.ods n'a pas pu être créé").arg(currentCruise.sNom));
+        }else
+            QMessageBox::warning(this,QString("Erreur lors de la création de campagne"),QString("Le fichier Profils_%1.ods n'a pas été trouvé"));
+
+
+        fFile=new QFile(QString("%1/Sippican_exemple.ods").arg(sPathToConfMission));
         if(fFile->exists())
         {
             dirRoot.mkpath(QString("%1/%2/CELERITE").arg(sPathToMissions).arg(currentCruise.sNom));
-            if(!fFile->copy(QString("%1/%2/CELERITE/%3").arg(sPathToMissions).arg(currentCruise.sNom).arg(QString("Sippican_%1.xls").arg(currentCruise.sNom))))
+            if(!fFile->copy(QString("%1/%2/CELERITE/%3").arg(sPathToMissions).arg(currentCruise.sNom).arg(QString("Sippican_%1.ods").arg(currentCruise.sNom))))
                 QMessageBox::warning(this,QString("Erreur lors de la création de campagne"),QString("Le fichier Sippican_%1.xls n'a pas pu être créé").arg(currentCruise.sNom));
         }
         else
-            QMessageBox::warning(this,QString("Erreur lors de la création de campagne"),QString("Le fichier Sippican_exemple.xls n'a pas été trouvé"));
+            QMessageBox::warning(this,QString("Erreur lors de la création de campagne"),QString("Le fichier Sippican_exemple.ods n'a pas été trouvé"));
 
 
-        fFile=new QFile(QString("%1/Fiche_recap_TIRANT_EAU.docx").arg(sPathToConfMission));
+        fFile=new QFile(QString("%1/Tirants_eau_exemple.ods").arg(sPathToConfMission));
         if(fFile->exists())
         {
             dirRoot.mkpath(QString("%1/%2/DIVERS/TIRANT_EAU").arg(sPathToMissions).arg(currentCruise.sNom));
-            if(!fFile->copy(QString("%1/%2/DIVERS/TIRANT_EAU/%3").arg(sPathToMissions).arg(currentCruise.sNom).arg(QString("Tirant_Eau_%1.docx").arg(currentCruise.sNom))))
-                QMessageBox::warning(this,QString("Erreur lors de la création de campagne"),QString("Le fichier Tirant_Eau_%1.xlsx n'a pas pu être créé").arg(currentCruise.sNom));
+            if(!fFile->copy(QString("%1/%2/DIVERS/TIRANT_EAU/%3").arg(sPathToMissions).arg(currentCruise.sNom).arg(QString("Tirants_Eau_%1.ods").arg(currentCruise.sNom))))
+                QMessageBox::warning(this,QString("Erreur lors de la création de campagne"),QString("Le fichier Tirants_Eau_%1.ods n'a pas pu être créé").arg(currentCruise.sNom));
         }
         else
-            QMessageBox::warning(this,QString("Erreur lors de la création de campagne"),QString("Le fichier Fiche_recap_TIRANT_EAU.docx n'a pas été trouvé"));
+            QMessageBox::warning(this,QString("Erreur lors de la création de campagne"),QString("Le fichier Tirants_eau_exemple.ods n'a pas été trouvé"));
     }
 
     else
@@ -245,7 +255,7 @@ void fenMission::valider()
                 {
                        QMessageBox::warning(this,QString("Erreur lors du changement de nom de la campagne"),
                                             QString("Impossible de renommer %1 en %2").arg(missionPrec.sNom).arg(currentCruise.sNom));
-                       qDebug()<<QString("%1/%2").arg(sPathToMissions).arg(missionPrec.sNom)<<QString("%1/%2").arg(sPathToMissions).arg(currentCruise.sNom);
+                       //qDebug()<<QString("%1/%2").arg(sPathToMissions).arg(missionPrec.sNom)<<QString("%1/%2").arg(sPathToMissions).arg(currentCruise.sNom);
 
                        return;
                 }
@@ -351,6 +361,8 @@ void fenMission::creeSensorsPaths()
     foreach(Sensor* sensor,mListRecords)
     {
         Sensor::Parameters param=sensor->getParameters();
+        if(param.type==Sensor::Folder || param.type==Sensor::Files)
+        {
         QString sCompletePath=sPathToNewCruise+param.sDestPath;
 
         if(mCurrentCruiseDataGroups.contains(param.sGroup))
@@ -368,7 +380,7 @@ void fenMission::creeSensorsPaths()
                 QDesktopServices::openUrl(sCompletePath);
             }
         }
-
+    }
     }
     emit newCruiseSet(ui->le_Mission->text());
 }
