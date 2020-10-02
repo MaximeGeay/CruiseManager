@@ -23,6 +23,7 @@ SOURCES += \
     mainwindow.cpp \
     sensor.cpp \
     sensorxmlhandler.cpp \
+    synchroauto.cpp \
     xmlserializable.cpp
 
 HEADERS += \
@@ -32,6 +33,7 @@ HEADERS += \
     mainwindow.h \
     sensor.h \
     sensorxmlhandler.h \
+    synchroauto.h \
     xmlserializable.h
 
 FORMS += \
@@ -39,7 +41,8 @@ FORMS += \
     fenmission.ui \
     fenpreferences.ui \
     mainwindow.ui \
-    sensor.ui
+    sensor.ui \
+    synchroauto.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

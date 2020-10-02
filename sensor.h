@@ -26,9 +26,10 @@ public:
 
         struct Parameters{
           QString sSourcePath,sDestPath,sName,sExtensions="*.*",sGroup="Tous",sDesc;
-
-          RecordType type;
-          SyncType sync;
+          bool bSyncAuto=false;
+          int nRecurrence=30;
+          RecordType type=Files;
+          SyncType sync=Incremental;
         };
 
 

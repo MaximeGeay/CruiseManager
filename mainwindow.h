@@ -17,6 +17,7 @@ class DataManager;
 class QVBoxLayout;
 class QHBoxLayout;
 class QListWidgetItem;
+class QScrollArea;
 
 class MainWindow : public QMainWindow
 {
@@ -36,6 +37,8 @@ private slots:
     void ouvrirConfMission();
     void groupSelected(QListWidgetItem *item);
     void sensorSelected(QListWidgetItem *item);
+    void closeEvent(QCloseEvent* event);
+    void clickOnRaz();
 
 private:
     Ui::MainWindow *ui;
@@ -51,7 +54,10 @@ private:
     QList<Sensor*>mCurrentSensors;
     QList<DataManager*>mDataManagers;
      QHBoxLayout *mLayoutDataManager;
+     QVBoxLayout *mLayoutSyncAuto;
      DataManager *mLastDataManager;
+
+
 
 
 };

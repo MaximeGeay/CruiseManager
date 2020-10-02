@@ -90,7 +90,6 @@ void fenPreferences::setCurrentCruise(QString sCruise)
     mCurrentCruise=sCruise;
     mNewCruise=true;
 
-    majCurrentCruise();
 }
 
 void fenPreferences::endMissionEdit()
@@ -193,25 +192,7 @@ void fenPreferences::addSensor(Sensor *sensor)
     QObject::connect(sensor,&Sensor::editingStatusChanged,this,&fenPreferences::editingStatusControl);
 }
 
-void fenPreferences::majCurrentCruise()
-{
-  /*  QString sPathToNewCruise=QString("%1/%2").arg(mPathToMissions).arg(mCurrentCruise);
-    QString sRelativePath;
 
-    QList<Sensor*>tempList;
-    foreach(Sensor* sensor,mSensorList)
-    {
-        Sensor::Parameters param=sensor->getParameters();
-        sRelativePath=param.sDestPath.section(mPathToMissions,-1).section("/",2,-1);
-
-        param.sDestPath=QString("%1/%2").arg(sPathToNewCruise).arg(sRelativePath);
-        sensor->setParameters(param);
-        tempList.append(sensor);
-    }
-
-    mSensorList=tempList;
-    saveSensorList();*/
-}
 
 void fenPreferences::removeSensor()
 {
@@ -248,7 +229,7 @@ void fenPreferences::editingStatusControl()
     }
     else
         ui->btn_Valider->setEnabled(true);
-    qDebug()<<"SensorList"<<mSensorList.count();
+
 
 
     if(!mCurrentSensor->getEditStatus())
@@ -311,7 +292,7 @@ void fenPreferences::majListItem()
 
     reader.setContentHandler(&handler);
     QXmlInputSource source(&file);
-    bool result=reader.parse(source);
+    reader.parse(source);
     file.close();
 
     majGroupListWidget();

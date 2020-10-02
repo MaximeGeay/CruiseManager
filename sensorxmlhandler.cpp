@@ -23,15 +23,10 @@ bool SensorXmlHandler::startElement(const QString &namespaceURI, const QString &
         param.sExtensions=atts.value("Ext");
         param.sDesc=atts.value("Desc");
         param.sync=static_cast<Sensor::SyncType>(atts.value("Sync").toInt());
-      /*
-        QString sValid=atts.value("Valid");
-        if(sValid=="1")
-            param.bValid=true;
-        else
-            param.bValid=false;
-        */
         param.type=static_cast<Sensor::RecordType>(atts.value("Type").toInt());
         param.sGroup=atts.value("Group");
+        param.bSyncAuto=static_cast<bool>(atts.value("SyncAuto").toInt());
+        param.nRecurrence=atts.value("Recurrence").toInt();
         Sensor* sensor= new Sensor;
         sensor->setParameters(param);
 
@@ -56,6 +51,7 @@ bool SensorXmlHandler::error(const QXmlParseException &exception)
     QString info=tr("Error at %1, %2").arg(exception.lineNumber()).arg(exception.columnNumber());
     emit sendMessage(info);
     qDebug()<<info<<exception.message();
+    return true;
 }
 
 bool SensorXmlHandler::fatalError(const QXmlParseException &exception)
@@ -63,6 +59,7 @@ bool SensorXmlHandler::fatalError(const QXmlParseException &exception)
     QString info=tr("Fatal Error at %1, %2").arg(exception.lineNumber()).arg(exception.columnNumber());
     emit sendMessage(info);
     qDebug()<<info<<exception.message();
+     return true;
 }
 
 bool SensorXmlHandler::warning(const QXmlParseException &exception)
@@ -71,6 +68,7 @@ bool SensorXmlHandler::warning(const QXmlParseException &exception)
     QString info=tr("Warning at %1, %2").arg(exception.lineNumber()).arg(exception.columnNumber());
     emit sendMessage(info);
     qDebug()<<info<<exception.message();
+     return true;
 }
 
 

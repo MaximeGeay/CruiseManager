@@ -46,6 +46,8 @@ void Sensor::write(QXmlStreamWriter &writer)
        // writer.writeAttribute("Valid",QString("%1").arg(mParameters.bValid));
         writer.writeAttribute("Group",QString("%1").arg(mParameters.sGroup));
         writer.writeAttribute("Desc",QString("%1").arg(mParameters.sDesc));
+        writer.writeAttribute("SyncAuto",QString("%1").arg(mParameters.bSyncAuto));
+        writer.writeAttribute("Recurrence",QString("%1").arg(mParameters.nRecurrence));
 
 
 
@@ -101,6 +103,9 @@ void Sensor::init()
     ui->le_Source->setText(mParameters.sSourcePath);
     ui->le_ext->setText(mParameters.sExtensions);
     ui->te_Desc->setText(mParameters.sDesc);
+    ui->cb_Auto->setChecked(mParameters.bSyncAuto);
+    ui->sp_timer->setValue(mParameters.nRecurrence);
+    ui->sp_timer->setEnabled(ui->cb_Auto->isChecked());
 
    // ui->cb_Activer->setChecked(mParameters.bValid);
     ui->cb_Type->setCurrentIndex(mParameters.type);
@@ -131,6 +136,8 @@ void Sensor::verrouiller()
     ui->btn_Valider->setVisible(!bVerrou);
     ui->Btn_Modifier->setVisible(bVerrou);
     ui->te_Desc->setReadOnly(bVerrou);
+    ui->cb_Auto->setEnabled(!bVerrou);
+    ui->sp_timer->setEnabled(!bVerrou);
 
     mEditing=!bVerrou;
     emit editingStatusChanged();
@@ -153,6 +160,8 @@ void Sensor::clicOnValider()
         mParameters.sync=SyncType::Incremental;
     //qDebug()<<"sync"<<mParameters.sync;
 
+    mParameters.bSyncAuto=ui->cb_Auto->isChecked();
+    mParameters.nRecurrence=ui->sp_timer->value();
     emit editingFinished();
 
     clickOnAnnuler();
@@ -219,14 +228,6 @@ void Sensor::syncChanged(int nSync)
     }
 
 }
-/*
-void Sensor::activation(int nValid)
-{
-    if(nValid==0)
-        mParameters.bValid=false;
-    else
-        mParameters.bValid=true;
-}*/
 
 void Sensor::selGroup()
 {

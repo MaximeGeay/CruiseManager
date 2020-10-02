@@ -59,8 +59,9 @@ void fenMission::newCruise()
 
     mNewCruise=true;
     ui->cb_Admin->setChecked(true);
-    setAdmin(Qt::Checked);
+
     emit dataListRequest();
+    setAdmin(Qt::Checked);
     this->show();
 }
 
@@ -78,8 +79,9 @@ void fenMission::editCruise()
 
     mNewCruise=false;
     ui->cb_Admin->setChecked(false);
-    setAdmin(Qt::Unchecked);
+
     emit dataListRequest();
+    setAdmin(Qt::Unchecked);
     this->show();
 }
 
@@ -325,6 +327,12 @@ void fenMission::setAdmin(int nAdm)
     ui->te_Operateurs->setReadOnly(!bAdm);
     ui->de_Debut->setReadOnly(!bAdm);
     ui->de_Fin->setReadOnly(!bAdm);
+
+    QListIterator<QCheckBox*>itCB(mListCBData);
+    while (itCB.hasNext()) {
+       itCB.next()->setEnabled(bAdm);
+
+    }
 
 }
 

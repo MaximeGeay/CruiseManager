@@ -34,7 +34,6 @@ private slots:
     void annuler();
     void addNewSensor();
     void addSensor(Sensor *sensor);
-    void majCurrentCruise();
     void removeSensor();
     void showMessage(QString sMsg);
     void editingStatusControl();

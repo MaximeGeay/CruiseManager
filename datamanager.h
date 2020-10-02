@@ -6,6 +6,7 @@
 #include <QProcess>
 
 #include "sensor.h"
+#include "synchroauto.h"
 
 namespace Ui {
 class DataManager;
@@ -29,11 +30,15 @@ public slots:
     bool getSynchroStatus();
     void execSynchro();
     QString getSensorName();
+    SynchroAuto* getAutoSyncWidget();
+    void killSyncAuto();
 
 private slots:
     void clickOnAddFiles();
     void clickOnSynchro();
-    void synchroAutoStatusChanged(bool bStatus);
+    void clickOnAutoSync();
+
+
     void synchro();
     void rsyncReponse();
     void rsyncEnd(int exitCode, QProcess::ExitStatus exitStatus);
@@ -43,11 +48,13 @@ signals:
     void erreur(QString);
     void copyPourcent(int);
 
+
 private:
     Ui::DataManager *ui;
 
     Sensor* mSensor;
-    bool mSynchroStatus=false;
+    SynchroAuto* mAutoSync;
+    bool mSynchroIsRunning=false;
     QProcess *mProcessSynchro;
     bool mSystemIsWindows=false;
     bool mSimulate=true;
