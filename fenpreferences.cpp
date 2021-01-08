@@ -15,7 +15,7 @@
 #include "fenpreferences.h"
 #include "ui_fenpreferences.h"
 
-#include "sensorxmlhandler.h"
+#include "recordxmlhandler.h"
 
 fenPreferences::fenPreferences(QWidget *parent) :
     QWidget(parent),
@@ -29,26 +29,31 @@ fenPreferences::fenPreferences(QWidget *parent) :
     QObject::connect(ui->btn_ParcConfMission,&QToolButton::clicked,this,&fenPreferences::selectConfMissionPath);
     QObject::connect(ui->btn_Valider,&QPushButton::clicked,this,&fenPreferences::valider);
     QObject::connect(ui->btn_annuler,&QPushButton::clicked,this,&fenPreferences::annuler);
-    QObject::connect(ui->btn_AddSensor,&QToolButton::clicked,this,&fenPreferences::addNewSensor);
-    QObject::connect(ui->btn_rmSensor,&QToolButton::clicked,this,&fenPreferences::removeSensor);
-    QObject::connect(ui->listSensorWidget,&QListWidget::itemClicked,this,&fenPreferences::listSensorSelected);
+    QObject::connect(ui->btn_AddRecord,&QToolButton::clicked,this,&fenPreferences::addNewRecord);
+    QObject::connect(ui->btn_rmRecord,&QToolButton::clicked,this,&fenPreferences::removeRecord);
+    QObject::connect(ui->listRecordWidget,&QListWidget::itemClicked,this,&fenPreferences::listRecordSelected);
     QObject::connect(ui->listGroupWidget,&QListWidget::itemClicked,this,&fenPreferences::listGroupSelected);
     QObject::connect(ui->btn_AddGroup,&QToolButton::clicked,this,&fenPreferences::addGroup);
     QObject::connect(ui->btn_EditGroup,&QToolButton::clicked,this,&fenPreferences::editGroup);
     QObject::connect(ui->btn_rmGroup,&QToolButton::clicked,this,&fenPreferences::rmGroup);
+    QObject::connect(ui->btn_RecordFichier,&QPushButton::clicked,this,&fenPreferences::clickOnSaveRecordFile);
+    QObject::connect(ui->btn_OuvreFichier,&QPushButton::clicked,this,&fenPreferences::clickOnOpenRecordFile);
 
-    mCurrentSensor=new Sensor;
+
+    mCurrentRecord=new Record;
 
 
 
-    mSensorLayout=new QVBoxLayout(ui->gb_Sensors);
-    mSensorLayout->setAlignment(Qt::AlignTop);
-    mSensorLayout->setDirection(QBoxLayout::TopToBottom);
+    mRecordLayout=new QVBoxLayout(ui->gb_Records);
+    mRecordLayout->setAlignment(Qt::AlignTop);
+    mRecordLayout->setDirection(QBoxLayout::TopToBottom);
+
+
 
 
     mPathToMissions=mSettings->value("Mission/Path",QDir::homePath()).toString();
     mPathToConfMission=mSettings->value("PathToConfMission",QDir::homePath()).toString();
-
+    mRecordFileName=mSettings->value("RecordFileName","records.xml").toString();
     majListItem();
     majGroupListWidget();
 
@@ -64,9 +69,11 @@ void fenPreferences::init()
 {
     mPathToMissions=mSettings->value("Mission/Path",QDir::homePath()).toString();
     mPathToConfMission=mSettings->value("PathToConfMission",QDir::homePath()).toString();
+    mRecordFileName=mSettings->value("RecordFileName","records.xml").toString();
 
     ui->le_RepCruises->setText(mPathToMissions);
     ui->le_ConfMission->setText(mPathToConfMission);
+    ui->l_FicRecord->setText(mRecordFileName);
 
     majListItem();
     majGroupListWidget();
@@ -80,9 +87,9 @@ QStringList fenPreferences::getDataGroups()
     return mGroupList;
 }
 
-QList<Sensor *> fenPreferences::getSensorsList()
+QList<Record *> fenPreferences::getRecordsList()
 {
-    return mSensorList;
+    return mRecordList;
 }
 
 void fenPreferences::setCurrentCruise(QString sCruise)
@@ -97,18 +104,18 @@ void fenPreferences::endMissionEdit()
     mNewCruise=false;
 }
 
-QList<Sensor *> fenPreferences::getSensorsListFromGroups(QStringList groupList)
+QList<Record *> fenPreferences::getRecordsListFromGroups(QStringList groupList)
 {
-    QList<Sensor*> sensorList;
+    QList<Record*> recordList;
 
-    QListIterator<Sensor*>itS(mSensorList);
+    QListIterator<Record*>itS(mRecordList);
     while (itS.hasNext()) {
-        Sensor* sensor=itS.next();
-        if(groupList.contains(sensor->getParameters().sGroup))
-            sensorList.append(sensor);
+        Record* record=itS.next();
+        if(groupList.contains(record->getParameters().sGroup))
+            recordList.append(record);
 
     }
-    return sensorList;
+    return recordList;
 
 }
 
@@ -149,7 +156,8 @@ void fenPreferences::valider()
         return;
     }
 
-    saveSensorList();
+
+    saveRecordList();
     emit editingFinished();
     this->close();
 
@@ -161,47 +169,45 @@ void fenPreferences::annuler()
     this->close();
 }
 
-void fenPreferences::addNewSensor()
+void fenPreferences::addNewRecord()
 {
-    Sensor *sensor=new Sensor;
-    sensor->setDeverrouiller(true);
-    mbNewSensor=true;
-    addSensor(sensor);
+    Record *record=new Record;
+    record->setDeverrouiller(true);
+    mbNewRecord=true;
+    addRecord(record);
 
 
 
 }
 
-void fenPreferences::addSensor(Sensor *sensor)
+void fenPreferences::addRecord(Record *record)
 {
 
-    mCurrentSensor->hide();
-    sensor->setGroupList(mGroupList);
-    mSensorList.append(sensor);
-    //ui->listSensorWidget->addItem(sensor->getParameters().sName);
+    mCurrentRecord->hide();
+    record->setGroupList(mGroupList);
+    mRecordList.append(record);
 
-    mCurrentSensor=sensor;
-    mSensorLayout->addWidget(mCurrentSensor);
+    mCurrentRecord=record;
+    mRecordLayout->addWidget(mCurrentRecord);
 
-    if(mCurrentSensor->getParameters().sName.isEmpty())
-        mCurrentSensor->show();
+    if(mCurrentRecord->getParameters().sName.isEmpty())
+        mCurrentRecord->show();
     else
-        mCurrentSensor->hide();
-    //sensor->show();
+        mCurrentRecord->hide();
 
-    QObject::connect(sensor,&Sensor::editingStatusChanged,this,&fenPreferences::editingStatusControl);
+    QObject::connect(record,&Record::editingStatusChanged,this,&fenPreferences::editingStatusControl);
 }
 
 
 
-void fenPreferences::removeSensor()
+void fenPreferences::removeRecord()
 {
-    QString sName=mCurrentSensor->getParameters().sName;
+    QString sName=mCurrentRecord->getParameters().sName;
     int nRes=QMessageBox::question(this,QString("Suppression de l'enregistrement %1").arg(sName),QString("Etes-vous sûrs de vouloir supprimer l'enregistrement %1").arg(sName));
     if(nRes==QMessageBox::Yes)
     {
-        mSensorList.removeOne(mCurrentSensor);
-        saveSensorList();
+        mRecordList.removeOne(mCurrentRecord);
+        saveRecordList();
         majListItem();
     }
 
@@ -218,9 +224,9 @@ void fenPreferences::editingStatusControl()
     if(!mNewCruise)
     {
     int n=0;
-    foreach(Sensor* oneSensor,mSensorList)
+    foreach(Record* oneRecord,mRecordList)
     {
-        if(oneSensor->getEditStatus()==true)
+        if(oneRecord->getEditStatus()==true)
             n++;
     }
     if(n>0)
@@ -232,12 +238,12 @@ void fenPreferences::editingStatusControl()
 
 
 
-    if(!mCurrentSensor->getEditStatus())
+    if(!mCurrentRecord->getEditStatus())
     {
-        if(mbNewSensor)
+        if(mbNewRecord)
         {
-            saveSensorList();
-            mbNewSensor=false;
+            saveRecordList();
+            mbNewRecord=false;
         }
 
         majListItem();
@@ -245,20 +251,20 @@ void fenPreferences::editingStatusControl()
     }
 }
 
-bool fenPreferences::listSensorSelected(QListWidgetItem *item)
+bool fenPreferences::listRecordSelected(QListWidgetItem *item)
 {
-    mCurrentSensor->hide();
+    mCurrentRecord->hide();
 
     QString sName=item->text();
 
-    foreach(Sensor* sensor,mSensorList)
+    foreach(Record* record,mRecordList)
     {
-        if(sensor->getParameters().sName==sName)
+        if(record->getParameters().sName==sName)
         {
-            mCurrentSensor=sensor;
-            mCurrentSensor->show();
-            ui->btn_rmSensor->setVisible(true);
-            QObject::connect(mCurrentSensor,&Sensor::editingFinished,this,&fenPreferences::sensorEditionFinished);
+            mCurrentRecord=record;
+            mCurrentRecord->show();
+            ui->btn_rmRecord->setVisible(true);
+            QObject::connect(mCurrentRecord,&Record::editingFinished,this,&fenPreferences::recordEditionFinished);
             return true;
         }
     }
@@ -270,13 +276,13 @@ bool fenPreferences::listSensorSelected(QListWidgetItem *item)
 void fenPreferences::majListItem()
 {
 
-    mSensorList.clear();
+    mRecordList.clear();
     mGroupList.clear();
-    ui->listSensorWidget->clear();
+    ui->listRecordWidget->clear();
 
-    ui->btn_rmSensor->setVisible(false);
+    ui->btn_rmRecord->setVisible(false);
 
-    QString sFileOpen=QString("%1/sensors.xml").arg(mPathToConfMission);
+    QString sFileOpen=QString("%1/%2").arg(mPathToConfMission,mRecordFileName);
     QFile file(sFileOpen);
 
     if(!file.open(QIODevice::ReadOnly))
@@ -285,10 +291,10 @@ void fenPreferences::majListItem()
         return;
     }
     QXmlSimpleReader reader;
-    SensorXmlHandler handler;
-    QObject::connect(&handler,&SensorXmlHandler::loadSensor,this,&fenPreferences::addSensor);
-    QObject::connect(&handler,&SensorXmlHandler::sendMessage,this,&fenPreferences::showMessage);
-    QObject::connect(&handler,&SensorXmlHandler::loadGroup,this,&fenPreferences::appendGroup);
+    RecordXmlHandler handler;
+    QObject::connect(&handler,&RecordXmlHandler::loadRecord,this,&fenPreferences::addRecord);
+    QObject::connect(&handler,&RecordXmlHandler::sendMessage,this,&fenPreferences::showMessage);
+    QObject::connect(&handler,&RecordXmlHandler::loadGroup,this,&fenPreferences::appendGroup);
 
     reader.setContentHandler(&handler);
     QXmlInputSource source(&file);
@@ -299,9 +305,9 @@ void fenPreferences::majListItem()
 
 }
 
-void fenPreferences::sensorEditionFinished()
+void fenPreferences::recordEditionFinished()
 {
-    saveSensorList();
+    saveRecordList();
 }
 
 void fenPreferences::addGroup()
@@ -330,20 +336,20 @@ void fenPreferences::editGroup()
             mGroupList.replace(nGroupIndex,sGroup);
             majGroupListWidget();
 
-            QList<Sensor*>tempList;
-            foreach(Sensor* sensor,mSensorList)
+            QList<Record*>tempList;
+            foreach(Record* record,mRecordList)
             {
-                Sensor::Parameters param=sensor->getParameters();
+                Record::Parameters param=record->getParameters();
                 if(param.sGroup==sPrevious)
                 {
                     param.sGroup=sGroup;
-                    sensor->setParameters(param);
+                    record->setParameters(param);
 
                 }
-                tempList.append(sensor);
+                tempList.append(record);
             }
 
-            mSensorList=tempList;
+            mRecordList=tempList;
 
 
 
@@ -361,20 +367,20 @@ void fenPreferences::rmGroup()
     {
         mGroupList.removeOne(sGroup);
         majGroupListWidget();
-        QList<Sensor*>tempList;
-        foreach(Sensor* sensor,mSensorList)
+        QList<Record*>tempList;
+        foreach(Record* record,mRecordList)
         {
-            Sensor::Parameters param=sensor->getParameters();
+            Record::Parameters param=record->getParameters();
             if(param.sGroup==sGroup)
             {
                 param.sGroup=QString("Tous");
-                sensor->setParameters(param);
+                record->setParameters(param);
             }
 
-            tempList.append(sensor);
+            tempList.append(record);
         }
-        mSensorList=tempList;
-        saveSensorList();
+        mRecordList=tempList;
+        saveRecordList();
         majListItem();
 
     }
@@ -391,10 +397,10 @@ void fenPreferences::majGroupListWidget()
         mGroupList.append("Tous");
 
     ui->listGroupWidget->addItems(mGroupList);
-    saveSensorList();
-    foreach(Sensor* sensor,mSensorList)
+    saveRecordList();
+    foreach(Record* record,mRecordList)
     {
-        sensor->setGroupList(mGroupList);
+        record->setGroupList(mGroupList);
     }
 
     ui->listGroupWidget->setCurrentItem(ui->listGroupWidget->item(0));
@@ -409,15 +415,15 @@ void fenPreferences::appendGroup(QString sGroup)
 
 void fenPreferences::listGroupSelected(QListWidgetItem *item)
 {
-    ui->listSensorWidget->clear();
-    mCurrentSensor->close();
+    ui->listRecordWidget->clear();
+    mCurrentRecord->close();
     if(item->text()=="Tous")
     {
         ui->btn_rmGroup->setEnabled(false);
         ui->btn_EditGroup->setEnabled(false);
-        foreach(Sensor* sensor,mSensorList)
+        foreach(Record* record,mRecordList)
         {
-            ui->listSensorWidget->addItem(sensor->getParameters().sName);
+            ui->listRecordWidget->addItem(record->getParameters().sName);
         }
 
     }
@@ -426,11 +432,74 @@ void fenPreferences::listGroupSelected(QListWidgetItem *item)
         ui->btn_rmGroup->setEnabled(true);
         ui->btn_EditGroup->setEnabled(true);
 
-        foreach(Sensor* sensor,mSensorList)
+        foreach(Record* record,mRecordList)
         {
-            Sensor::Parameters param=sensor->getParameters();
+            Record::Parameters param=record->getParameters();
             if(param.sGroup==item->text())
-                ui->listSensorWidget->addItem(sensor->getParameters().sName);
+                ui->listRecordWidget->addItem(record->getParameters().sName);
+        }
+    }
+}
+
+void fenPreferences::clickOnSaveRecordFile()
+{
+    bool ok;
+         QString text = QInputDialog::getText(this, tr("Sauvegarder le fichier courant"),
+                                              tr("Entrer un nouveau nom"), QLineEdit::Normal,
+                                              mRecordFileName, &ok);
+         if (ok && !text.isEmpty())
+         {
+             if(!text.endsWith(".xml"))
+                 text=QString("%1.xml").arg(text);
+
+             if(QFile::exists(QString("%1/%2").arg(mPathToConfMission,text)))
+             {
+                 int nRes=QMessageBox::question(this,"Le fichier existe déjà",QString("Le fichier %1 existe déjà.\n"
+                                                                             "Souhaitez-vous l'écraser?").arg(text),QMessageBox::Yes|QMessageBox::No);
+                 if(nRes==QMessageBox::No)
+                 {
+                     clickOnSaveRecordFile();
+                     return;
+                 }
+                 else
+                 {
+                     QFile::remove(QString("%1/%2").arg(mPathToConfMission,text));
+                 }
+
+             }
+             bool bRes=QFile::copy(QString("%1/%2").arg(mPathToConfMission,mRecordFileName),QString("%1/%2").arg(mPathToConfMission,text));
+             if(bRes)
+             {
+                 mRecordFileName=text;
+                 mSettings->setValue("RecordFileName",mRecordFileName);
+                 init();
+             }
+
+         }
+}
+
+void fenPreferences::clickOnOpenRecordFile()
+{
+    QString sFilePath=QFileDialog::getOpenFileName(this,"Sélectionner un fichier de configuration .xml",mPathToConfMission,tr("Fichier de configuration XML (*.xml)"));
+
+    if(!sFilePath.isEmpty())
+    {
+        QString sFileName=sFilePath.section("/",-1);
+        int nRes=QMessageBox::question(this,"Changement de fichier de configuration",QString("Etes-vous sûr de vouloir utiliser le fichier %1 à la place du fichier %2")
+                                       .arg(sFileName,mRecordFileName),QMessageBox::Yes|QMessageBox::No);
+        if(nRes==QMessageBox::Yes)
+        {
+            if (!QFile::exists(QString("%1/%2").arg(mPathToConfMission,sFileName)))
+            {
+                if(!QFile::copy(sFilePath,QString("%1/%2").arg(mPathToConfMission,sFileName)))
+                { QMessageBox::critical(this,"Echec",QString("Echec de l'import du fichier %1 dans le répertoire ConfMission").arg(sFileName));
+                    return;
+                }
+            }
+
+            mRecordFileName=sFileName;
+            mSettings->setValue("RecordFileName",mRecordFileName);
+            init();
         }
     }
 }
@@ -439,28 +508,28 @@ void fenPreferences::listGroupSelected(QListWidgetItem *item)
 
 
 
-void fenPreferences::saveSensorList()
+void fenPreferences::saveRecordList()
 {
 
-    QString sXmlPath=QString("%1/sensors.xml").arg(mPathToConfMission);
+    QString sXmlPath=QString("%1/%2").arg(mPathToConfMission,mRecordFileName);
     QFile xmlFile(sXmlPath);
     if(!xmlFile.open(QIODevice::WriteOnly))
     {
-        QMessageBox::warning(this,QString("Impossible d'écrire le fichier sensors.xml"),tr("Le fichier n'est pas inscriptible"));
+        QMessageBox::warning(this,QString("Impossible d'écrire le fichier %1").arg(mRecordFileName),tr("Le fichier n'est pas inscriptible"));
         return;
     }
     QXmlStreamWriter writer(&xmlFile);
     writer.setAutoFormatting(true);
     writer.writeStartDocument();
-    writer.writeStartElement(tr("http://cqt.cruisemanager.fr/sensorlist"),"sensorlist");
-    writer.writeComment(tr("%1 capteurs sont configurés").arg(mSensorList.count()));
+    writer.writeStartElement(tr("http://cqt.cruisemanager.fr/recordlist"),"recordlist");
+    writer.writeComment(tr("%1 enregistrements sont configurés").arg(mRecordList.count()));
 
-    foreach(Sensor* oneSensor,mSensorList)
+    foreach(Record* oneRecord,mRecordList)
     {
-        oneSensor->write(writer);
+        oneRecord->write(writer);
     }
 
-    QString uri="http://cqt.cruisemanager.fr/sensorlist";
+    QString uri="http://cqt.cruisemanager.fr/recordlist";
     QStringListIterator it(mGroupList);
     while (it.hasNext())
     {

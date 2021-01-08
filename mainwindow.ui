@@ -24,7 +24,7 @@
     <item row="1" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -110,7 +110,7 @@
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="QListWidget" name="listSensorWidget">
+         <widget class="QListWidget" name="listRecordWidget">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
             <horstretch>0</horstretch>

@@ -4,7 +4,7 @@
 #include <QWidget>
 #include <QDate>
 
-#include <sensor.h>
+#include <record.h>
 
 namespace Ui {
 class fenMission;
@@ -34,7 +34,7 @@ public slots:
     void newCruise();
     void editCruise();
     void setDataGroups(QStringList groupList);
-    void setRecordList(QList<Sensor*> sensorList);
+    void setRecordList(QList<Record*> recordList);
 
 
 
@@ -59,11 +59,11 @@ private:
     bool removeDir(QString sDir, QString sMission);
     QStringList mDataGroups;
     QStringList mCurrentCruiseDataGroups;
-    QList<Sensor*> mListRecords;
+    QList<Record*> mListRecords;
     QVBoxLayout *mDataLayout;
     QList<QCheckBox*> mListCBData;
 
-    void creeSensorsPaths();
+    void creeRecordsPaths();
 
 
 };

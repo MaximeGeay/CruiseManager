@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include <QList>
-#include "sensor.h"
+#include "record.h"
 
 namespace Ui {
 class fenPreferences;
@@ -22,30 +22,32 @@ public:
 public slots:
     void init();
     QStringList getDataGroups();
-    QList<Sensor*> getSensorsList();
+    QList<Record*> getRecordsList();
     void setCurrentCruise(QString sCruise);
     void endMissionEdit();
-    QList<Sensor*> getSensorsListFromGroups(QStringList groupList);
+    QList<Record*> getRecordsListFromGroups(QStringList groupList);
 
 private slots:
     void selectCruisesPath();
     void selectConfMissionPath();
     void valider();
     void annuler();
-    void addNewSensor();
-    void addSensor(Sensor *sensor);
-    void removeSensor();
+    void addNewRecord();
+    void addRecord(Record *record);
+    void removeRecord();
     void showMessage(QString sMsg);
     void editingStatusControl();
-    bool listSensorSelected(QListWidgetItem *item);
+    bool listRecordSelected(QListWidgetItem *item);
     void majListItem();
-    void sensorEditionFinished();
+    void recordEditionFinished();
     void addGroup();
     void editGroup();
     void rmGroup();
     void majGroupListWidget();
     void appendGroup(QString sGroup);
     void listGroupSelected(QListWidgetItem *item);
+    void clickOnSaveRecordFile();
+    void clickOnOpenRecordFile();
 
 
 signals:
@@ -57,11 +59,12 @@ private:
     QString mPathToMissions;
     QString mCurrentCruise;
     QString mPathToConfMission;
-    QVBoxLayout *mSensorLayout;
-    QList<Sensor*> mSensorList;
-    Sensor* mCurrentSensor;
-    void saveSensorList();
-    bool mbNewSensor=false;
+    QString mRecordFileName;
+    QVBoxLayout *mRecordLayout;
+    QList<Record*> mRecordList;
+    Record* mCurrentRecord;
+    void saveRecordList();
+    bool mbNewRecord=false;
     QStringList mGroupList;
     bool mNewCruise=false;
 

@@ -24,12 +24,17 @@ SynchroAuto::~SynchroAuto()
     delete ui;
 }
 
-void SynchroAuto::setSensor(Sensor *sensor)
+void SynchroAuto::setRecord(Record *record)
 {
-    mSensor=sensor;
-    Sensor::Parameters param=mSensor->getParameters();
+    mRecord=record;
+    Record::Parameters param=mRecord->getParameters();
     ui->l_Name->setText(param.sName);
     ui->sp_timer->setValue(param.nRecurrence);
+
+    if(param.sync==Record::Mirror)
+        ui->l_type->setText("(Miroir)");
+    if(param.sync==Record::Incremental)
+        ui->l_type->setText("(incrémental)");
 
     status();
 }

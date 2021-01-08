@@ -4,7 +4,7 @@
 #include <QMainWindow>
 
 #include "fenmission.h"
-#include "sensor.h"
+#include "record.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -36,7 +36,7 @@ private slots:
     void ouvrirMissions();
     void ouvrirConfMission();
     void groupSelected(QListWidgetItem *item);
-    void sensorSelected(QListWidgetItem *item);
+    void recordSelected(QListWidgetItem *item);
     void closeEvent(QCloseEvent* event);
     void clickOnRaz();
 
@@ -51,7 +51,7 @@ private:
     fenMission *fenCruise;
     fenMission::st_Mission mCurrentCruise;
     QStringList mDataGroups;
-    QList<Sensor*>mCurrentSensors;
+    QList<Record*>mCurrentRecords;
     QList<DataManager*>mDataManagers;
      QHBoxLayout *mLayoutDataManager;
      QVBoxLayout *mLayoutSyncAuto;

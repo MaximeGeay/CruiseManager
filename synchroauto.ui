@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>507</width>
+    <width>573</width>
     <height>91</height>
    </rect>
   </property>
@@ -39,13 +39,34 @@
     <number>0</number>
    </property>
    <item row="1" column="5">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Récurrence (min)</string>
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
      </property>
     </widget>
    </item>
-   <item row="1" column="6">
+   <item row="1" column="1" rowspan="4">
+    <widget class="Line" name="line_4">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0" colspan="11">
+    <widget class="Line" name="line_3">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="8">
+    <widget class="Line" name="line_5">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="7">
     <widget class="QSpinBox" name="sp_timer">
      <property name="maximumSize">
       <size>
@@ -64,14 +85,7 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="1" rowspan="3">
-    <widget class="Line" name="line_4">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0" colspan="10">
+   <item row="0" column="0" colspan="11">
     <widget class="Line" name="line_2">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -91,10 +105,25 @@
      </property>
     </spacer>
    </item>
-   <item row="1" column="4">
-    <widget class="Line" name="line">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
+   <item row="1" column="9">
+    <widget class="QPushButton" name="btn_startstop">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>Start/Stop</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
@@ -128,43 +157,14 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="8">
-    <widget class="QPushButton" name="btn_startstop">
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>16777215</height>
-      </size>
-     </property>
+   <item row="1" column="6">
+    <widget class="QLabel" name="label">
      <property name="text">
-      <string>Start/Stop</string>
-     </property>
-     <property name="checkable">
-      <bool>true</bool>
+      <string>Récurrence (min)</string>
      </property>
     </widget>
    </item>
-   <item row="4" column="0" colspan="10">
-    <widget class="Line" name="line_3">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="7">
-    <widget class="Line" name="line_5">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="2" colspan="7">
+   <item row="2" column="2" rowspan="3" colspan="8">
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
       <number>0</number>
@@ -191,6 +191,16 @@
        </item>
       </layout>
      </widget>
+    </widget>
+   </item>
+   <item row="1" column="4">
+    <widget class="QLabel" name="l_type">
+     <property name="text">
+      <string>TextLabel</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
     </widget>
    </item>
   </layout>

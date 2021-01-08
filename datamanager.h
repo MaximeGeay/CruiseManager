@@ -5,7 +5,7 @@
 #include <QList>
 #include <QProcess>
 
-#include "sensor.h"
+#include "record.h"
 #include "synchroauto.h"
 
 namespace Ui {
@@ -22,14 +22,14 @@ class DataManager : public QWidget
 public:
 
 
-    explicit DataManager(QWidget *parent = nullptr, Sensor* sensor=nullptr);
+    explicit DataManager(QWidget *parent = nullptr, Record* record=nullptr);
     ~DataManager();
 
 public slots:
-    void setSensor(Sensor* sensor);
+    void setRecord(Record* record);
     bool getSynchroStatus();
     void execSynchro();
-    QString getSensorName();
+    QString getRecordName();
     SynchroAuto* getAutoSyncWidget();
     void killSyncAuto();
 
@@ -52,7 +52,7 @@ signals:
 private:
     Ui::DataManager *ui;
 
-    Sensor* mSensor;
+    Record* mRecord;
     SynchroAuto* mAutoSync;
     bool mSynchroIsRunning=false;
     QProcess *mProcessSynchro;
@@ -62,13 +62,13 @@ private:
     int mFilesToSync=0;
     QStringList mFilesList;
     int mCumulSize=0;
-    int mSizeToCopy=0;
+    qint64 mSizeToCopy=0;
     bool mSyncOK=false;
     bool m_DClic=false;
     QString mSourcePath;
 
     QFileSystemModel *treeModel;
-    QString getCompletePath(Sensor *sensor);
+    QString getCompletePath(Record *record);
 
 
 

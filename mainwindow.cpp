@@ -9,14 +9,14 @@
 #include <QMessageBox>
 #include <QTextEdit>
 #include <QScrollArea>
-
+#include <QCloseEvent>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include"fenpreferences.h"
 #include "datamanager.h"
 
-#define VERSION "CruiseManager 1.3"
+#define VERSION "CruiseManager 1.4"
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -46,7 +46,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 
 
-    mLastDataManager=new DataManager(nullptr,new Sensor);
+    mLastDataManager=new DataManager(nullptr,new Record);
 
 
     init();
@@ -66,7 +66,7 @@ MainWindow::MainWindow(QWidget *parent)
     QObject::connect(fenCruise,&fenMission::newCruiseSet,fenPref,&fenPreferences::setCurrentCruise);
     QObject::connect(fenCruise,&fenMission::dataListRequest,this,&MainWindow::dataListRequested);
     QObject::connect(ui->listGroupWidget,&QListWidget::itemClicked,this,&MainWindow::groupSelected);
-    QObject::connect(ui->listSensorWidget,&QListWidget::itemClicked,this,&MainWindow::sensorSelected);
+    QObject::connect(ui->listRecordWidget,&QListWidget::itemClicked,this,&MainWindow::recordSelected);
     QObject::connect(ui->btn_RAZLog,&QPushButton::clicked,this,&MainWindow::clickOnRaz);
 
 }
@@ -102,8 +102,8 @@ void MainWindow::init()
     ui->listGroupWidget->clear();
     ui->listGroupWidget->addItems(mCurrentCruise.listDataGroups);
 
-    mCurrentSensors.clear();
-    mCurrentSensors=fenPref->getSensorsListFromGroups(mCurrentCruise.listDataGroups);
+    mCurrentRecords.clear();
+    mCurrentRecords=fenPref->getRecordsListFromGroups(mCurrentCruise.listDataGroups);
 
     QListIterator<DataManager*> itM(mDataManagers);
     while(itM.hasNext())
@@ -112,7 +112,7 @@ void MainWindow::init()
     }
     mDataManagers.clear();
 
-    QListIterator<Sensor*> it(mCurrentSensors);
+    QListIterator<Record*> it(mCurrentRecords);
     while(it.hasNext())
     {
         DataManager* data=new DataManager(nullptr,it.next());
@@ -194,7 +194,7 @@ void MainWindow::afficheConfig()
 void MainWindow::dataListRequested()
 {
     fenCruise->setDataGroups(fenPref->getDataGroups());
-    fenCruise->setRecordList(fenPref->getSensorsList());
+    fenCruise->setRecordList(fenPref->getRecordsList());
 }
 
 void MainWindow::ouvrirMissions()
@@ -209,29 +209,29 @@ void MainWindow::ouvrirConfMission()
 
 void MainWindow::groupSelected(QListWidgetItem *item)
 {
-    ui->listSensorWidget->clear();
+    ui->listRecordWidget->clear();
     mLastDataManager->hide();
-    QListIterator<Sensor*>it(mCurrentSensors);
+    QListIterator<Record*>it(mCurrentRecords);
     while (it.hasNext()) {
-        Sensor* sensor=it.next();
-        Sensor::Parameters param=sensor->getParameters();
+        Record* record=it.next();
+        Record::Parameters param=record->getParameters();
 
         if(item->text()==param.sGroup)
         {
-            ui->listSensorWidget->addItem(param.sName);
+            ui->listRecordWidget->addItem(param.sName);
         }
 
     }
 
 }
 
-void MainWindow::sensorSelected(QListWidgetItem *item)
+void MainWindow::recordSelected(QListWidgetItem *item)
 {
     mLastDataManager->hide();
     QListIterator<DataManager*>it(mDataManagers);
     while (it.hasNext()) {
         DataManager* data=it.next();
-        if(data->getSensorName().compare(item->text())==0)
+        if(data->getRecordName().compare(item->text())==0)
         {
             mLastDataManager=data;
             mLastDataManager->show();
@@ -255,7 +255,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
         DataManager* data=it.next();
         if(data->getSynchroStatus())
         {
-            listSynchro.append(data->getSensorName());
+            listSynchro.append(data->getRecordName());
         }
     }
 
@@ -267,7 +267,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
         while(it.hasNext())
             sSynchros=it.next()+" "+sSynchros;
 
-            nRep=QMessageBox::question(this,QString("Quitter"),QString("La synchronisation de %1 est en cours\n"
+        nRep=QMessageBox::question(this,QString("Quitter"),QString("La synchronisation de %1 est en cours\n"
                                                                        "Les fichiers en cours de copie risquent d'être corrompus\n"
                                                                         "Souhaitez-vous quitter malgré tout?").arg(sSynchros),QMessageBox::Yes|QMessageBox::No);
 

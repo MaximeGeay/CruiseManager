@@ -2,40 +2,38 @@
 #include<QDebug>
 #include <QSettings>
 
-#include "sensor.h"
-#include "ui_sensor.h"
+#include "record.h"
+#include "ui_record.h"
 
 
-Sensor::Sensor(QWidget *parent) :
+Record::Record(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::Sensor)
+    ui(new Ui::Record)
 {
     ui->setupUi(this);
 
-    QObject::connect(ui->btn_Valider,&QPushButton::clicked,this,&Sensor::clicOnValider);
-    QObject::connect(ui->btn_Annuler,&QPushButton::clicked,this,&Sensor::clickOnAnnuler);
-    QObject::connect(ui->btn_ParcSource,&QToolButton::clicked,this,&Sensor::clickOnParcSource);
-    QObject::connect(ui->btn_ParcDest,&QToolButton::clicked,this,&Sensor::clickOnParcDest);
-    QObject::connect(ui->Btn_Modifier,&QToolButton::clicked,this,&Sensor::verrouiller);
-    QObject::connect(ui->cb_Type,QOverload<int>::of(&QComboBox::currentIndexChanged),this,&Sensor::typeChanged);
-   // QObject::connect(ui->cb_Activer,&QCheckBox::stateChanged,this,&Sensor::activation);
+    QObject::connect(ui->btn_Valider,&QPushButton::clicked,this,&Record::clicOnValider);
+    QObject::connect(ui->btn_Annuler,&QPushButton::clicked,this,&Record::clickOnAnnuler);
+    QObject::connect(ui->btn_ParcSource,&QToolButton::clicked,this,&Record::clickOnParcSource);
+    QObject::connect(ui->btn_ParcDest,&QToolButton::clicked,this,&Record::clickOnParcDest);
+    QObject::connect(ui->Btn_Modifier,&QToolButton::clicked,this,&Record::verrouiller);
+    QObject::connect(ui->cb_Type,QOverload<int>::of(&QComboBox::currentIndexChanged),this,&Record::typeChanged);
 
 
 
     //init();
 }
 
-
-Sensor::~Sensor()
+Record::~Record()
 {
     delete ui;
 }
 
-void Sensor::write(QXmlStreamWriter &writer)
+void Record::write(QXmlStreamWriter &writer)
 {
 
-        QString uri="http://cqt.cruisemanager.fr/sensorlist";
-        writer.writeEmptyElement(uri,"sensor");
+        QString uri="http://cqt.cruisemanager.fr/recordlist";
+        writer.writeEmptyElement(uri,"record");
 
         writer.writeAttribute("Name",QString("%1").arg(mParameters.sName));
         writer.writeAttribute("SourcePath",QString("%1").arg(mParameters.sSourcePath));
@@ -54,29 +52,29 @@ void Sensor::write(QXmlStreamWriter &writer)
 
 }
 
-void Sensor::setParameters(Sensor::Parameters param)
+void Record::setParameters(Record::Parameters param)
 {
     mParameters=param;
     init();
 }
 
-Sensor::Parameters Sensor::getParameters()
+Record::Parameters Record::getParameters()
 {
     return mParameters;
 }
 
-bool Sensor::getEditStatus()
+bool Record::getEditStatus()
 {
     return mEditing;
 }
 
-void Sensor::setDeverrouiller(bool bStatus)
+void Record::setDeverrouiller(bool bStatus)
 {
     ui->Btn_Modifier->setChecked(bStatus);
     init();
 }
 
-void Sensor::setGroupList(QStringList slGroups)
+void Record::setGroupList(QStringList slGroups)
 {
     mGroups=slGroups;
     ui->cb_Groupes->clear();
@@ -86,7 +84,7 @@ void Sensor::setGroupList(QStringList slGroups)
 
 }
 
-QStringList Sensor::getGroupList()
+QStringList Record::getGroupList()
 {
     return  mGroups;
 }
@@ -94,7 +92,7 @@ QStringList Sensor::getGroupList()
 
 
 
-void Sensor::init()
+void Record::init()
 {
     verrouiller();
 
@@ -105,7 +103,7 @@ void Sensor::init()
     ui->te_Desc->setText(mParameters.sDesc);
     ui->cb_Auto->setChecked(mParameters.bSyncAuto);
     ui->sp_timer->setValue(mParameters.nRecurrence);
-    ui->sp_timer->setEnabled(ui->cb_Auto->isChecked());
+    //ui->sp_timer->setEnabled(ui->cb_Auto->isChecked());
 
    // ui->cb_Activer->setChecked(mParameters.bValid);
     ui->cb_Type->setCurrentIndex(mParameters.type);
@@ -118,7 +116,7 @@ void Sensor::init()
 
 }
 
-void Sensor::verrouiller()
+void Record::verrouiller()
 {
     bool bVerrou=!ui->Btn_Modifier->isChecked();
     //ui->Btn_Modifier->setVisible(!bVerrou);
@@ -144,21 +142,23 @@ void Sensor::verrouiller()
 
 }
 
-void Sensor::clicOnValider()
+void Record::clicOnValider()
 {
     mParameters.sName=ui->le_Name->text();
     mParameters.sDestPath=ui->le_Dest->text();
+    qDebug()<<mParameters.sDestPath;
     mParameters.sSourcePath=ui->le_Source->text();
     mParameters.sExtensions=ui->le_ext->text();
    // mParameters.bValid=ui->cb_Activer->isChecked();
     mParameters.sDesc=ui->te_Desc->toPlainText();
-    mParameters.type=static_cast<Sensor::RecordType>(ui->cb_Type->currentIndex());
+    mParameters.type=static_cast<Record::RecordType>(ui->cb_Type->currentIndex());
     mParameters.sGroup=ui->cb_Groupes->currentText();
     if(ui->rd_Mirror->isChecked())
         mParameters.sync=SyncType::Mirror;
     else
         mParameters.sync=SyncType::Incremental;
     //qDebug()<<"sync"<<mParameters.sync;
+
 
     mParameters.bSyncAuto=ui->cb_Auto->isChecked();
     mParameters.nRecurrence=ui->sp_timer->value();
@@ -167,20 +167,20 @@ void Sensor::clicOnValider()
     clickOnAnnuler();
 }
 
-void Sensor::clickOnAnnuler()
+void Record::clickOnAnnuler()
 {
     ui->Btn_Modifier->setChecked(false);
     init();
 }
 
-void Sensor::clickOnParcSource()
+void Record::clickOnParcSource()
 {
     QString sChemin=QFileDialog::getExistingDirectory(this,QString("Sélectionner le répertoire sources des données %1").arg(ui->le_Name->text()),mParameters.sSourcePath,QFileDialog::ShowDirsOnly);
     if(!sChemin.isEmpty())
         ui->le_Source->setText(sChemin);
 }
 
-void Sensor::clickOnParcDest()
+void Record::clickOnParcDest()
 {
     QSettings settings("CruiseManager","Settings");
 
@@ -193,7 +193,7 @@ void Sensor::clickOnParcDest()
     }
 }
 
-void Sensor::typeChanged(int nType)
+void Record::typeChanged(int nType)
 {
     //qDebug()<<"nType"<<nType;
     if(nType==RecordType::Files)
@@ -213,7 +213,7 @@ void Sensor::typeChanged(int nType)
     }
 }
 
-void Sensor::syncChanged(int nSync)
+void Record::syncChanged(int nSync)
 {
 
     if(nSync==SyncType::Incremental)
@@ -229,7 +229,7 @@ void Sensor::syncChanged(int nSync)
 
 }
 
-void Sensor::selGroup()
+void Record::selGroup()
 {
     ui->cb_Groupes->setCurrentIndex(ui->cb_Groupes->findText(mParameters.sGroup));
 }

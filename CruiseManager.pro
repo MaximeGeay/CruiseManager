@@ -21,8 +21,8 @@ SOURCES += \
     fenpreferences.cpp \
     main.cpp \
     mainwindow.cpp \
-    sensor.cpp \
-    sensorxmlhandler.cpp \
+    record.cpp \
+    recordxmlhandler.cpp \
     synchroauto.cpp \
     xmlserializable.cpp
 
@@ -31,8 +31,8 @@ HEADERS += \
     fenmission.h \
     fenpreferences.h \
     mainwindow.h \
-    sensor.h \
-    sensorxmlhandler.h \
+    record.h \
+    recordxmlhandler.h \
     synchroauto.h \
     xmlserializable.h
 
@@ -41,7 +41,7 @@ FORMS += \
     fenmission.ui \
     fenpreferences.ui \
     mainwindow.ui \
-    sensor.ui \
+    record.ui \
     synchroauto.ui
 
 # Default rules for deployment.

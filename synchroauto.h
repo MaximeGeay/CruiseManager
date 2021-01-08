@@ -2,7 +2,7 @@
 #define SYNCHROAUTO_H
 
 #include <QWidget>
-#include "sensor.h"
+#include "record.h"
 
 namespace Ui {
 class SynchroAuto;
@@ -21,7 +21,7 @@ public:
 signals:
     void runSynchro();
 public slots:
-    void setSensor(Sensor* sensor);
+    void setRecord(Record* record);
     bool isRunning();
     void synchroEnd();
     void percent(int nPourcent);
@@ -35,7 +35,7 @@ private slots:
 private:
     Ui::SynchroAuto *ui;
 
-    Sensor* mSensor;
+    Record* mRecord;
     bool mTimerIsRunning=false;
     bool mSyncIsRunning=false;
     QTimer* mTimerSync;

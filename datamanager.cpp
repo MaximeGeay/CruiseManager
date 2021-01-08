@@ -11,7 +11,7 @@
 #include "datamanager.h"
 #include "ui_datamanager.h"
 
-DataManager::DataManager(QWidget *parent, Sensor *sensor) :
+DataManager::DataManager(QWidget *parent, Record *record) :
     QWidget(parent),
     ui(new Ui::DataManager)
 {
@@ -26,7 +26,7 @@ DataManager::DataManager(QWidget *parent, Sensor *sensor) :
 
 
 
-    setSensor(sensor);
+    setRecord(record);
 
     mProcessSynchro=new QProcess(this);
     //QObject::connect(mProcessSynchro,&QProcess::readyReadStandardOutput,this,&DataManager::rsyncReponse);
@@ -56,23 +56,23 @@ DataManager::~DataManager()
     delete ui;
 }
 
-void DataManager::setSensor(Sensor *sensor)
+void DataManager::setRecord(Record *record)
 {
-    mSensor=sensor;
+    mRecord=record;
 
-    Sensor::Parameters param=mSensor->getParameters();
+    Record::Parameters param=mRecord->getParameters();
     ui->l_Nom->setText(param.sName);
     ui->l_Etat->setText(param.sDesc);
     ui->cb_SynchroAuto->setChecked(param.bSyncAuto);
 
-    mAutoSync->setSensor(mSensor);
+    mAutoSync->setRecord(mRecord);
     if(param.bSyncAuto)
         mAutoSync->show();
     else
         mAutoSync->hide();
 
     if(!param.sDestPath.isEmpty())
-        ui->treeContenu->setRootIndex(treeModel->setRootPath(getCompletePath(mSensor)));
+        ui->treeContenu->setRootIndex(treeModel->setRootPath(getCompletePath(mRecord)));
 }
 
 bool DataManager::getSynchroStatus()
@@ -85,9 +85,9 @@ void DataManager::execSynchro()
 
 }
 
-QString DataManager::getSensorName()
+QString DataManager::getRecordName()
 {
-    return mSensor->getParameters().sName;
+    return mRecord->getParameters().sName;
 }
 
 SynchroAuto *DataManager::getAutoSyncWidget()
@@ -102,13 +102,13 @@ void DataManager::killSyncAuto()
 
 void DataManager::clickOnAddFiles()
 {
-    Sensor::Parameters param=mSensor->getParameters();
+    Record::Parameters param=mRecord->getParameters();
     QStringList sSources=QFileDialog::getOpenFileNames(this,QString("Sélectionner les fichiers à importer"),param.sSourcePath,"Tous fichiers(*.*)");
     QStringList sErrors;
     if(!sSources.isEmpty())
     {
         QDir dir;
-        if(dir.exists(getCompletePath(mSensor)))
+        if(dir.exists(getCompletePath(mRecord)))
         {
             QString sUneSource;
             QString sNomFichier;
@@ -118,9 +118,9 @@ void DataManager::clickOnAddFiles()
                 sNomFichier=sUneSource.section("/",-1);
 
                 QFile file;
-                if(!file.copy(sUneSource,QString("%1/%2").arg(getCompletePath(mSensor)).arg(sNomFichier)))
+                if(!file.copy(sUneSource,QString("%1/%2").arg(getCompletePath(mRecord)).arg(sNomFichier)))
                 {
-                    QString sMsg=QString("Impossible de copier le fichier %1 de %2 dans %3").arg(sNomFichier).arg(sUneSource).arg(getCompletePath(mSensor));
+                    QString sMsg=QString("Impossible de copier le fichier %1 de %2 dans %3").arg(sNomFichier).arg(sUneSource).arg(getCompletePath(mRecord));
                     sErrors.append(sMsg);
                 }
 
@@ -129,9 +129,13 @@ void DataManager::clickOnAddFiles()
         }
         else
         {
-            QString sMsg=QString("Le répertoire Destination %1 n'existe pas").arg(getCompletePath(mSensor));
+            QString sMsg=QString("Le répertoire Destination %1 n'existe pas").arg(getCompletePath(mRecord));
             sErrors.append(sMsg);
         }
+    }
+    else
+    {
+        return;
     }
 
     if(sErrors.count()>0)
@@ -155,9 +159,9 @@ void DataManager::clickOnAddFiles()
 
 void DataManager::clickOnSynchro()
 {
-    Sensor::Parameters param=mSensor->getParameters();
+    Record::Parameters param=mRecord->getParameters();
     int nRes=QMessageBox::No;
-    if(param.type==Sensor::RecordType::Files)
+    if(param.type==Record::RecordType::Files)
     {
         nRes=QMessageBox::question(this,QString("Synchronisation de fichier"),QString("Etes-vous sûr de vouloir synchroniser les données %1\n"
                                                                                       "Source : %2\n"
@@ -171,7 +175,7 @@ void DataManager::clickOnSynchro()
         nRes=QMessageBox::question(this,QString("Synchronisation de fichier"),QString("Etes-vous sûr de vouloir synchroniser les données %1\n"
                                                                                       "Source : %2\n"
                                                                                       "Destination : %3\n"
-                                                                                      "Type : Dossier").arg(param.sName).arg(param.sSourcePath).arg(getCompletePath(mSensor)));
+                                                                                      "Type : Dossier").arg(param.sName).arg(param.sSourcePath).arg(getCompletePath(mRecord)));
 
     }
 
@@ -184,7 +188,7 @@ void DataManager::clickOnSynchro()
 
 void DataManager::clickOnAutoSync()
 {
-    Sensor::Parameters param=mSensor->getParameters();
+    Record::Parameters param=mRecord->getParameters();
     bool bPrevious=param.bSyncAuto;
     param.bSyncAuto=ui->cb_SynchroAuto->isChecked();
 
@@ -197,7 +201,7 @@ void DataManager::clickOnAutoSync()
         mAutoSync->hide();
     }
     if(bPrevious!=param.bSyncAuto)
-        mSensor->setParameters(param);
+        mRecord->setParameters(param);
 }
 
 
@@ -206,7 +210,7 @@ void DataManager::synchro()
     ui->te_rsync->clear();
 
     mFilesList.clear();
-    Sensor::Parameters param=mSensor->getParameters();
+    Record::Parameters param=mRecord->getParameters();
     QDir dir;
     if(!dir.exists(param.sSourcePath))
     {
@@ -218,9 +222,9 @@ void DataManager::synchro()
 
         return;
     }
-    if(!dir.exists(getCompletePath(mSensor)))
+    if(!dir.exists(getCompletePath(mRecord)))
     {
-        QString sMsg=QString("Le répertoire Destination %1 n'existe pas").arg(getCompletePath(mSensor));
+        QString sMsg=QString("Le répertoire Destination %1 n'existe pas").arg(getCompletePath(mRecord));
         qDebug()<<sMsg;
         emit erreur(QString("%1 -> %2: %3").arg(QDateTime::currentDateTimeUtc().toString("HH:mm:ss")).arg(param.sName).arg(sMsg));
 
@@ -237,12 +241,12 @@ void DataManager::synchro()
     if(mSystemIsWindows)
     {
         sSource=QString("/cygdrive/%1%2").arg(param.sSourcePath.section(":",0,0)).arg(param.sSourcePath.section(":",1,-1));
-        sDest=QString("/cygdrive/%1%2").arg(getCompletePath(mSensor).section(":",0,0)).arg(getCompletePath(mSensor).section(":",1,-1));
+        sDest=QString("/cygdrive/%1%2").arg(getCompletePath(mRecord).section(":",0,0)).arg(getCompletePath(mRecord).section(":",1,-1));
         sProgram=QString("E:/Developpement/CruiseManager/rsync/rsync.exe");
     }
     else {
         sSource=param.sSourcePath;
-        sDest=getCompletePath(mSensor);
+        sDest=getCompletePath(mRecord);
         sProgram=QString("rsync");
     }
 
@@ -267,10 +271,10 @@ void DataManager::synchro()
 
 
     QString sSync="";
-    if(param.sync==Sensor::SyncType::Mirror)
+    if(param.sync==Record::SyncType::Mirror)
         sSync="--delete-after ";
 
-    if(param.type==Sensor::RecordType::Files)
+    if(param.type==Record::RecordType::Files)
     {
 
         int nbExt=param.sExtensions.count(",");
@@ -355,8 +359,8 @@ void DataManager::rsyncEnd(int exitCode, QProcess::ExitStatus exitStatus)
         //qDebug()<<"sReponse"<<sReponse;
         // qDebug()<<"n"<<sReponse.count("\n");
 
-        if(nbRC>3)
-        {
+        //if(nbRC>3)
+      //  {
 
             for(int i=1;i<nbRC-3;i++)
             {
@@ -376,14 +380,21 @@ void DataManager::rsyncEnd(int exitCode, QProcess::ExitStatus exitStatus)
             }
 
             // mSizeToCopy=sReponse.section("total size is",1,1).section("speedup",0,0).remove(" ").remove(",").toInt()/1000;
-            mSizeToCopy=mSizeToCopy/1000;
-            ui->pb_Total->setRange(0,mSizeToCopy);
-            mSyncOK=false;
-        }
-        else
-        {
-            mSyncOK=true;
-        }
+            qDebug()<<"mSizeToCopy"<<mSizeToCopy;
+            if(mSizeToCopy==0)
+                mSyncOK=true;
+            else
+            {
+                mSizeToCopy=mSizeToCopy/1000;
+                ui->pb_Total->setRange(0,mSizeToCopy);
+                mSyncOK=false;
+            }
+
+       // }
+      //  else
+      //  {
+           // mSyncOK=true;
+      //  }
 
 
     }
@@ -400,14 +411,25 @@ void DataManager::rsyncEnd(int exitCode, QProcess::ExitStatus exitStatus)
                 if(mManualSync)
                     QMessageBox::information(this,"Fichiers synchronisés","Fichiers déjà synchronisés");
                 mManualSync=false;
+                mSynchroIsRunning=false;
                 ui->pb_File->setVisible(false);
                 ui->pb_Total->setVisible(false);
                 return;
             }
             double dSize=mSizeToCopy;
-
+            qDebug()<<"dSize"<<dSize;
             dSize=dSize/1000;
-            QString sMoToCopy=QString::number(dSize,'f',3);
+            QString sMoToCopy;
+            if(dSize>1000)
+            {
+                dSize=dSize/1000;
+                sMoToCopy=QString ("%1 Go").arg(QString::number(dSize,'f',3));
+            }
+            else
+            {
+                sMoToCopy=QString ("%1 Mo").arg(QString::number(dSize,'f',3));
+            }
+
 
             if(delList.size()>0)
             {
@@ -418,16 +440,16 @@ void DataManager::rsyncEnd(int exitCode, QProcess::ExitStatus exitStatus)
                 sFichiers.remove("deleting ");
                 if(delList.size()==1)
 
-                    nRes=QMessageBox::question(this,"Confirmation de la synchronisation",QString("%1 Mo à copier\n%2 fichier sera supprimé : %3\n"
+                    nRes=QMessageBox::question(this,"Confirmation de la synchronisation",QString("%1 à copier\n%2 fichier sera supprimé : %3\n"
                                                                                                  "Souhaitez-vous procéder à la synchronisation?").arg(sMoToCopy).arg(delList.size()).arg(sFichiers));
                 else
-                    nRes=QMessageBox::question(this,"Confirmation de la synchronisation",QString("%1 Mo à copier\n%2 fichiers seront supprimés : %3\n"
+                    nRes=QMessageBox::question(this,"Confirmation de la synchronisation",QString("%1 à copier\n%2 fichiers seront supprimés : %3\n"
                                                                                                  "Souhaitez-vous procéder à la synchronisation?").arg(sMoToCopy).arg(delList.size()).arg(sFichiers));
             }
             else
             {
                 if(mManualSync)
-                    nRes=QMessageBox::question(this,"Confirmation de la synchronisation",QString("%1 Mo à copier\n"
+                    nRes=QMessageBox::question(this,"Confirmation de la synchronisation",QString("%1 à copier\n"
                                                                                                  "Souhaitez-vous procéder à la synchronisation?").arg(sMoToCopy));
                 else
                     nRes=QMessageBox::Yes;
@@ -448,6 +470,7 @@ void DataManager::rsyncEnd(int exitCode, QProcess::ExitStatus exitStatus)
         }
         else
         {
+            mSynchroIsRunning=false;
             ui->pb_File->setVisible(false);
             ui->pb_Total->setVisible(false);
         }
@@ -468,7 +491,7 @@ void DataManager::rsyncEnd(int exitCode, QProcess::ExitStatus exitStatus)
         }
         else
         {
-            emit erreur(QString("%1 -> %2: %3").arg(QDateTime::currentDateTimeUtc().toString("HH:mm:ss")).arg(getSensorName()).arg(exitStatus));
+            emit erreur(QString("%1 -> %2: %3").arg(QDateTime::currentDateTimeUtc().toString("HH:mm:ss")).arg(getRecordName()).arg(exitStatus));
             mAutoSync->setMessage(QString("Erreur : %1").arg(exitStatus));
         }
 
@@ -496,18 +519,18 @@ void DataManager::treeView_doubleClicked(const QModelIndex &index)
     }
 }
 
-QString DataManager::getCompletePath(Sensor *sensor)
+QString DataManager::getCompletePath(Record *record)
 {
-    Sensor::Parameters param(sensor->getParameters());
+    Record::Parameters param(record->getParameters());
     QString sCompletePath;
-    if(param.type==Sensor::Cruise)
+    if(param.type==Record::Cruise)
     {
         sCompletePath=param.sDestPath;
     }
     else
     {
         QSettings settings("CruiseManager","Settings");
-        QString sMissionPath=QString("%1/%2").arg(settings.value("Mission/Path").toString()).arg(settings.value("Mission/Nom").toString());
+        QString sMissionPath=QString("%1/%2/ARCHIVAGE_SISMER").arg(settings.value("Mission/Path").toString()).arg(settings.value("Mission/Nom").toString());
         sCompletePath=sMissionPath+param.sDestPath;
     }
     return sCompletePath;

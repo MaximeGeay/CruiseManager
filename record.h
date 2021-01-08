@@ -1,14 +1,14 @@
-#ifndef SENSOR_H
-#define SENSOR_H
+#ifndef RECORD_H
+#define RECORD_H
 
 #include <QWidget>
 #include "xmlserializable.h"
 
 namespace Ui {
-class Sensor;
+class Record;
 }
 
-class Sensor : public QWidget
+class Record : public QWidget
 {
     Q_OBJECT
 
@@ -33,9 +33,9 @@ public:
         };
 
 
-    explicit Sensor(QWidget *parent = nullptr);
+    explicit Record(QWidget *parent = nullptr);
 
-    ~Sensor();
+    ~Record();
 
     virtual void write(QXmlStreamWriter &writer);
 
@@ -66,10 +66,10 @@ signals:
 
 
 private:
-    Ui::Sensor *ui;
+    Ui::Record *ui;
     Parameters mParameters;
     bool mEditing=false;
     QStringList mGroups;
 };
 
-#endif // SENSOR_H
+#endif // RECORD_H

@@ -1,26 +1,26 @@
-#ifndef SENSORXMLHANDLER_H
-#define SENSORXMLHANDLER_H
+#ifndef RECORDXMLHANDLER_H
+#define RECORDXMLHANDLER_H
 
 #include <QObject>
 #include<QXmlDefaultHandler>
 
-#include"sensor.h"
+#include"record.h"
 
-class SensorXmlHandler : public QObject, public QXmlDefaultHandler
+class RecordXmlHandler : public QObject, public QXmlDefaultHandler
 {
     Q_OBJECT
 public:
-    explicit SensorXmlHandler(QObject *parent = nullptr);
+    explicit RecordXmlHandler(QObject *parent = nullptr);
     virtual bool startElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &atts);
     virtual bool error(const QXmlParseException &exception);
     virtual bool fatalError(const QXmlParseException &exception);
      virtual bool warning(const QXmlParseException &exception);
 
  signals:
-    void loadSensor (Sensor* S);
+    void loadRecord (Record* S);
     void loadGroup (QString sGroup);
     void sendMessage (QString s);
 
 };
 
-#endif // SENSORXMLHANDLER_H
+#endif // RECORDXMLHANDLER_H
