@@ -23,8 +23,7 @@ SOURCES += \
     mainwindow.cpp \
     record.cpp \
     recordxmlhandler.cpp \
-    synchroauto.cpp \
-    xmlserializable.cpp
+    synchroauto.cpp
 
 HEADERS += \
     datamanager.h \
@@ -51,3 +50,8 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 RESOURCES += \
     icons.qrc
+
+DISTFILES +=
+
+
+

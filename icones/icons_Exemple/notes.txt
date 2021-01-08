@@ -1,0 +1,5 @@
+magick.exe convert icon_16.png icon_32.png icon_256.png icon.ico #Windows
+convert icon_16.png icon_32.png icon_128.png icon.ico #Linux avec ImageMagick
+
+Mettre le fichier Icon créé dans le répertoire du projet
+Dans le .pro ajouter RC_ICONS = icon.ico

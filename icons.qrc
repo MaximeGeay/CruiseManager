@@ -2,5 +2,7 @@
     <qresource prefix="/">
         <file>icones/CadenasFerme.jpg</file>
         <file>icones/CadenasOuvert.jpg</file>
+        <file>icon.ico</file>
+        <file>icones/icon_32.png</file>
     </qresource>
 </RCC>

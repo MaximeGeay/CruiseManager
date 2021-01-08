@@ -16,7 +16,7 @@
 #include"fenpreferences.h"
 #include "datamanager.h"
 
-#define VERSION "CruiseManager 1.4"
+#define VERSION "CruiseManager 1.5"
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
